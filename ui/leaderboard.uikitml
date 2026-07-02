@@ -1,0 +1,14 @@
+<container flexDirection="column" alignItems="center" gap="4" padding="10">
+  <text fontSize="20" fontWeight="bold" color="#ffaa00" textAlign="center">LEADERBOARD</text>
+  <text name="r0" fontSize="11" color="#cccccc">1. ---</text>
+  <text name="r1" fontSize="11" color="#cccccc">2. ---</text>
+  <text name="r2" fontSize="11" color="#cccccc">3. ---</text>
+  <text name="r3" fontSize="11" color="#cccccc">4. ---</text>
+  <text name="r4" fontSize="11" color="#cccccc">5. ---</text>
+  <text name="r5" fontSize="11" color="#cccccc">6. ---</text>
+  <text name="r6" fontSize="11" color="#cccccc">7. ---</text>
+  <text name="r7" fontSize="11" color="#cccccc">8. ---</text>
+  <text name="r8" fontSize="11" color="#cccccc">9. ---</text>
+  <text name="r9" fontSize="11" color="#cccccc">10. ---</text>
+  <text name="btn-back" fontSize="14" color="#ff4444" backgroundColor="#330000" padding="5" borderRadius="4" textAlign="center" width="120">BACK</text>
+</container>

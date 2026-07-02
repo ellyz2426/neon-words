@@ -1,0 +1,16 @@
+<container flexDirection="column" gap="3" padding="8" backgroundColor="#00001188" borderRadius="4" width="160">
+  <text fontSize="12" fontWeight="bold" color="#00ffff" textAlign="center">FIND THESE WORDS</text>
+  <text name="w0" fontSize="11" color="#cccccc">---</text>
+  <text name="w1" fontSize="11" color="#cccccc">---</text>
+  <text name="w2" fontSize="11" color="#cccccc">---</text>
+  <text name="w3" fontSize="11" color="#cccccc">---</text>
+  <text name="w4" fontSize="11" color="#cccccc">---</text>
+  <text name="w5" fontSize="11" color="#cccccc">---</text>
+  <text name="w6" fontSize="11" color="#cccccc">---</text>
+  <text name="w7" fontSize="11" color="#cccccc">---</text>
+  <text name="w8" fontSize="11" color="#cccccc">---</text>
+  <text name="w9" fontSize="11" color="#cccccc">---</text>
+  <text name="w10" fontSize="11" color="#cccccc">---</text>
+  <text name="w11" fontSize="11" color="#cccccc">---</text>
+  <text name="hint" fontSize="10" color="#888888" textAlign="center">H = hint</text>
+</container>

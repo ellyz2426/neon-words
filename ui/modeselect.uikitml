@@ -1,0 +1,14 @@
+<container flexDirection="column" alignItems="center" gap="6" padding="10">
+  <text fontSize="22" fontWeight="bold" color="#00ffff" textAlign="center">SELECT MODE</text>
+  <container flexDirection="column" gap="3" alignItems="center">
+    <text name="btn-classic" fontSize="14" color="#00ffff" backgroundColor="#003344" padding="5" borderRadius="4" textAlign="center" width="200">CLASSIC</text>
+    <text name="btn-timed" fontSize="14" color="#ffaa00" backgroundColor="#332200" padding="5" borderRadius="4" textAlign="center" width="200">TIMED</text>
+    <text name="btn-race" fontSize="14" color="#ff44ff" backgroundColor="#330033" padding="5" borderRadius="4" textAlign="center" width="200">RACE</text>
+    <text name="btn-category" fontSize="14" color="#44ff44" backgroundColor="#003300" padding="5" borderRadius="4" textAlign="center" width="200">CATEGORY</text>
+    <text name="btn-daily" fontSize="14" color="#ffff00" backgroundColor="#333300" padding="5" borderRadius="4" textAlign="center" width="200">DAILY CHALLENGE</text>
+    <text name="btn-zen" fontSize="14" color="#88ccff" backgroundColor="#112233" padding="5" borderRadius="4" textAlign="center" width="200">ZEN</text>
+    <text name="btn-marathon" fontSize="14" color="#ff8844" backgroundColor="#331100" padding="5" borderRadius="4" textAlign="center" width="200">MARATHON</text>
+    <text name="btn-practice" fontSize="14" color="#aaaaaa" backgroundColor="#222222" padding="5" borderRadius="4" textAlign="center" width="200">PRACTICE</text>
+  </container>
+  <text name="btn-back" fontSize="14" color="#ff4444" backgroundColor="#330000" padding="5" borderRadius="4" textAlign="center" width="120">BACK</text>
+</container>

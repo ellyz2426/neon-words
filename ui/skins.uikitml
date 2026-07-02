@@ -1,0 +1,14 @@
+<container flexDirection="column" alignItems="center" gap="4" padding="10">
+  <text fontSize="18" fontWeight="bold" color="#ff8844" textAlign="center">GRID SKINS</text>
+  <container flexDirection="column" gap="3" alignItems="center">
+    <text name="s0" fontSize="12" color="#00ffff" backgroundColor="#003344" padding="4" borderRadius="4" textAlign="center" width="180">Neon Cyan [EQUIPPED]</text>
+    <text name="s1" fontSize="12" color="#ff4444" backgroundColor="#330000" padding="4" borderRadius="4" textAlign="center" width="180">Solar Flare</text>
+    <text name="s2" fontSize="12" color="#ff44ff" backgroundColor="#330033" padding="4" borderRadius="4" textAlign="center" width="180">Plasma Pink</text>
+    <text name="s3" fontSize="12" color="#4444ff" backgroundColor="#000033" padding="4" borderRadius="4" textAlign="center" width="180">Frost Blue</text>
+    <text name="s4" fontSize="12" color="#44ff44" backgroundColor="#003300" padding="4" borderRadius="4" textAlign="center" width="180">Toxic Green</text>
+    <text name="s5" fontSize="12" color="#ffaa00" backgroundColor="#332200" padding="4" borderRadius="4" textAlign="center" width="180">Royal Gold</text>
+    <text name="s6" fontSize="12" color="#aa44ff" backgroundColor="#220044" padding="4" borderRadius="4" textAlign="center" width="180">Void Purple</text>
+    <text name="s7" fontSize="12" color="#ff8844" backgroundColor="#331100" padding="4" borderRadius="4" textAlign="center" width="180">Inferno</text>
+  </container>
+  <text name="btn-back" fontSize="12" color="#ff4444" backgroundColor="#330000" padding="4" borderRadius="4" textAlign="center" width="80">BACK</text>
+</container>

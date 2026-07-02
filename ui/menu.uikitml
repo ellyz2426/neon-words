@@ -1,0 +1,14 @@
+<container flexDirection="column" alignItems="center" gap="8" padding="12">
+  <text name="title" fontSize="32" fontWeight="bold" color="#00ffff" textAlign="center">NEON WORDS</text>
+  <text name="subtitle" fontSize="14" color="#00aacc" textAlign="center">HOLODECK WORD SEARCH</text>
+  <text name="level-display" fontSize="12" color="#888888" textAlign="center">Level 1 - 0 XP</text>
+  <container flexDirection="column" gap="4" alignItems="center">
+    <text name="btn-play" fontSize="16" color="#00ffff" backgroundColor="#003344" padding="6" borderRadius="4" textAlign="center" width="180">PLAY</text>
+    <text name="btn-scores" fontSize="16" color="#ffaa00" backgroundColor="#332200" padding="6" borderRadius="4" textAlign="center" width="180">SCORES</text>
+    <text name="btn-achievements" fontSize="16" color="#ff44ff" backgroundColor="#330033" padding="6" borderRadius="4" textAlign="center" width="180">ACHIEVEMENTS</text>
+    <text name="btn-stats" fontSize="16" color="#44ff44" backgroundColor="#003300" padding="6" borderRadius="4" textAlign="center" width="180">STATS</text>
+    <text name="btn-skins" fontSize="16" color="#ff8844" backgroundColor="#331100" padding="6" borderRadius="4" textAlign="center" width="180">GRID SKINS</text>
+    <text name="btn-settings" fontSize="16" color="#8888ff" backgroundColor="#111133" padding="6" borderRadius="4" textAlign="center" width="180">SETTINGS</text>
+    <text name="btn-help" fontSize="16" color="#aaaaaa" backgroundColor="#222222" padding="6" borderRadius="4" textAlign="center" width="180">HELP</text>
+  </container>
+</container>

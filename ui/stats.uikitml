@@ -1,0 +1,14 @@
+<container flexDirection="column" alignItems="center" gap="4" padding="10">
+  <text fontSize="20" fontWeight="bold" color="#44ff44" textAlign="center">CAREER STATS</text>
+  <text name="s0" fontSize="12" color="#cccccc">Games Played: 0</text>
+  <text name="s1" fontSize="12" color="#cccccc">Words Found: 0</text>
+  <text name="s2" fontSize="12" color="#cccccc">Best Score: 0</text>
+  <text name="s3" fontSize="12" color="#cccccc">Total Score: 0</text>
+  <text name="s4" fontSize="12" color="#cccccc">Best Combo: x1</text>
+  <text name="s5" fontSize="12" color="#cccccc">Accuracy: 0%</text>
+  <text name="s6" fontSize="12" color="#cccccc">Grids Cleared: 0</text>
+  <text name="s7" fontSize="12" color="#cccccc">Play Time: 0m</text>
+  <text name="s8" fontSize="12" color="#cccccc">Daily Streak: 0</text>
+  <text name="s9" fontSize="12" color="#cccccc">Level: 1</text>
+  <text name="btn-back" fontSize="14" color="#ff4444" backgroundColor="#330000" padding="5" borderRadius="4" textAlign="center" width="120">BACK</text>
+</container>

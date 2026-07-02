@@ -1,0 +1,15 @@
+<container flexDirection="column" alignItems="center" gap="5" padding="10">
+  <text name="result-title" fontSize="22" fontWeight="bold" color="#00ffff" textAlign="center">COMPLETE!</text>
+  <text name="result-mode" fontSize="12" color="#888888" textAlign="center">Classic - Medium</text>
+  <container flexDirection="column" gap="3" alignItems="center">
+    <text name="stat-score" fontSize="14" color="#ffaa00">Score: 0</text>
+    <text name="stat-words" fontSize="14" color="#44ff44">Words: 0/8</text>
+    <text name="stat-accuracy" fontSize="14" color="#ff44ff">Accuracy: 0%</text>
+    <text name="stat-combo" fontSize="14" color="#00ffff">Best Combo: x1</text>
+    <text name="stat-time" fontSize="14" color="#ffff00">Time: 0:00</text>
+  </container>
+  <container flexDirection="row" gap="8">
+    <text name="btn-rematch" fontSize="14" color="#44ff44" backgroundColor="#003300" padding="6" borderRadius="4" textAlign="center" width="120">REMATCH</text>
+    <text name="btn-menu" fontSize="14" color="#ff4444" backgroundColor="#330000" padding="6" borderRadius="4" textAlign="center" width="120">MENU</text>
+  </container>
+</container>
