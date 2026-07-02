@@ -7,6 +7,7 @@
     <text name="stat-accuracy" fontSize="14" color="#ff44ff">Accuracy: 0%</text>
     <text name="stat-combo" fontSize="14" color="#00ffff">Best Combo: x1</text>
     <text name="stat-time" fontSize="14" color="#ffff00">Time: 0:00</text>
+    <text name="stat-xp" fontSize="13" color="#88ccff">+0 XP</text>
   </container>
   <container flexDirection="row" gap="8">
     <text name="btn-rematch" fontSize="14" color="#44ff44" backgroundColor="#003300" padding="6" borderRadius="4" textAlign="center" width="120">REMATCH</text>

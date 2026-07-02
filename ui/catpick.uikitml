@@ -1,0 +1,16 @@
+<container flexDirection="column" alignItems="center" gap="4" padding="10">
+  <text fontSize="20" fontWeight="bold" color="44ff44" textAlign="center">PICK CATEGORY</text>
+  <container flexDirection="column" gap="3" alignItems="center">
+    <text name="btn-ANIMALS" fontSize="13" color="#00ffff" backgroundColor="#003344" padding="4" borderRadius="4" textAlign="center" width="180">ANIMALS</text>
+    <text name="btn-SPACE" fontSize="13" color="#aa44ff" backgroundColor="#220044" padding="4" borderRadius="4" textAlign="center" width="180">SPACE</text>
+    <text name="btn-FOOD" fontSize="13" color="#ffaa00" backgroundColor="#332200" padding="4" borderRadius="4" textAlign="center" width="180">FOOD</text>
+    <text name="btn-TECH" fontSize="13" color="#4488ff" backgroundColor="#001133" padding="4" borderRadius="4" textAlign="center" width="180">TECH</text>
+    <text name="btn-COLORS" fontSize="13" color="#ff44ff" backgroundColor="#330033" padding="4" borderRadius="4" textAlign="center" width="180">COLORS</text>
+    <text name="btn-SPORTS" fontSize="13" color="#44ff44" backgroundColor="#003300" padding="4" borderRadius="4" textAlign="center" width="180">SPORTS</text>
+    <text name="btn-MUSIC" fontSize="13" color="#ff8844" backgroundColor="#331100" padding="4" borderRadius="4" textAlign="center" width="180">MUSIC</text>
+    <text name="btn-NATURE" fontSize="13" color="#88ccff" backgroundColor="#112233" padding="4" borderRadius="4" textAlign="center" width="180">NATURE</text>
+    <text name="btn-WEATHER" fontSize="13" color="#ffff44" backgroundColor="#333300" padding="4" borderRadius="4" textAlign="center" width="180">WEATHER</text>
+    <text name="btn-OCEAN" fontSize="13" color="#00aaff" backgroundColor="#002244" padding="4" borderRadius="4" textAlign="center" width="180">OCEAN</text>
+  </container>
+  <text name="btn-back" fontSize="12" color="#ff4444" backgroundColor="#330000" padding="4" borderRadius="4" textAlign="center" width="80">BACK</text>
+</container>

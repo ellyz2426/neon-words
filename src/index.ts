@@ -22,6 +22,8 @@ const CATEGORIES: Record<string, string[]> = {
   SPORTS: ['GOLF','SWIM','RACE','SURF','KICK','DUNK','GOAL','SCORE','BALL','TEAM','ARENA','COURT','MATCH','SERVE','DRAFT','SPRINT','VAULT','RELAY','COACH','FIELD','TRACK','ROUND','PITCH','MEDAL','DRILL'],
   MUSIC: ['DRUM','BASS','BEAT','SONG','TUNE','JAZZ','ROCK','NOTE','BAND','SOLO','TEMPO','PIANO','CHORD','SOUND','VOCAL','FLUTE','HARP','PULSE','LYRIC','OPERA','SLIDE','RIFF','STRUM','SCALE','MUTED'],
   NATURE: ['TREE','LAKE','HILL','SAND','RAIN','WAVE','LEAF','WIND','FIRE','SNOW','CAVE','PEAK','REEF','BLOOM','FROST','CREEK','MARSH','STONE','FERN','DUNE','BIRCH','CORAL','PETAL','GROVE','VAPOR'],
+  WEATHER: ['STORM','CLOUD','HAIL','GALE','MIST','SLEET','SMOG','GUST','HEAT','CHILL','FROST','BLAZE','HUMID','CLEAR','DRIZZLE','SUNNY','WINDY','FOGGY','THAW','COLD','WARM','DAMP','BRISK','HAZE','SQUALL'],
+  OCEAN: ['TIDE','SURF','KELP','SHORE','DEPTH','SHELL','WHALE','DRIFT','FOAM','CREST','CORAL','ABYSS','TRENCH','SHOAL','INLET','SWELL','PLUNGE','EDDY','BUOY','LAGOON','REEF','FJORD','CAPE','ATOLL','GULF'],
 };
 const CAT_NAMES = Object.keys(CATEGORIES);
 
@@ -35,13 +37,14 @@ const DIR_ALL = DIRS; // all 8
 interface Theme {
   name: string; grid: string; accent: string; bg: string; letter: string;
   found: string; hover: string; wall: string; fog: string;
+  drone1: number; drone2: number; droneLfo: number;
 }
 const THEMES: Theme[] = [
-  { name: 'Neon Holodeck', grid: '#003344', accent: '#00ffff', bg: '#000811', letter: '#00ffff', found: '#004466', hover: '#00ffff22', wall: '#002233', fog: '#000811' },
-  { name: 'Crimson Arena', grid: '#330011', accent: '#ff2244', bg: '#0a0002', letter: '#ff4466', found: '#440022', hover: '#ff224422', wall: '#220011', fog: '#0a0002' },
-  { name: 'Toxic Neon', grid: '#003300', accent: '#44ff44', bg: '#000a00', letter: '#44ff44', found: '#004400', hover: '#44ff4422', wall: '#002200', fog: '#000a00' },
-  { name: 'Ultra Violet', grid: '#220044', accent: '#aa44ff', bg: '#08001a', letter: '#bb66ff', found: '#330055', hover: '#aa44ff22', wall: '#1a0033', fog: '#08001a' },
-  { name: 'Solar Blaze', grid: '#331100', accent: '#ff8844', bg: '#0a0400', letter: '#ffaa66', found: '#442200', hover: '#ff884422', wall: '#221100', fog: '#0a0400' },
+  { name: 'Neon Holodeck', grid: '#003344', accent: '#00ffff', bg: '#000811', letter: '#00ffff', found: '#004466', hover: '#00ffff22', wall: '#002233', fog: '#000811', drone1: 55, drone2: 82.5, droneLfo: 0.15 },
+  { name: 'Crimson Arena', grid: '#330011', accent: '#ff2244', bg: '#0a0002', letter: '#ff4466', found: '#440022', hover: '#ff224422', wall: '#220011', fog: '#0a0002', drone1: 65, drone2: 97.5, droneLfo: 0.2 },
+  { name: 'Toxic Neon', grid: '#003300', accent: '#44ff44', bg: '#000a00', letter: '#44ff44', found: '#004400', hover: '#44ff4422', wall: '#002200', fog: '#000a00', drone1: 49, drone2: 73.5, droneLfo: 0.12 },
+  { name: 'Ultra Violet', grid: '#220044', accent: '#aa44ff', bg: '#08001a', letter: '#bb66ff', found: '#330055', hover: '#aa44ff22', wall: '#1a0033', fog: '#08001a', drone1: 58, drone2: 87, droneLfo: 0.18 },
+  { name: 'Solar Blaze', grid: '#331100', accent: '#ff8844', bg: '#0a0400', letter: '#ffaa66', found: '#442200', hover: '#ff884422', wall: '#221100', fog: '#0a0400', drone1: 62, drone2: 93, droneLfo: 0.22 },
 ];
 
 // ─── SKINS ──────────────────────────────────────────────────
@@ -103,7 +106,7 @@ const ACHIEVEMENTS: AchDef[] = [
 ];
 
 // ─── GAME STATE ─────────────────────────────────────────────
-type GamePhase = 'menu' | 'modeselect' | 'difficulty' | 'countdown' | 'playing' | 'paused' | 'gameover'
+type GamePhase = 'menu' | 'modeselect' | 'catpick' | 'difficulty' | 'countdown' | 'playing' | 'paused' | 'gameover'
   | 'leaderboard' | 'achievements' | 'settings' | 'stats' | 'help' | 'skins';
 
 interface WordPlacement { word: string; sr: number; sc: number; dr: number; dc: number; found: boolean; }
@@ -168,6 +171,18 @@ let currentCategory = '';
 let foundCells: (string | null)[][] = [];
 const FOUND_COLORS = ['#00aaff','#ff44aa','#44ff88','#ffaa00','#aa44ff','#ff4444','#44aaff','#aaff44','#ff88aa','#88aaff','#ffff44','#44ffff'];
 let foundColorIdx = 0;
+
+// Combo flash effect
+let comboFlashTimer = 0;
+let comboFlashColor = '#ffffff';
+
+// Found word fade-in animations
+interface FadeCell { r: number; c: number; color: string; alpha: number; timer: number; }
+let fadeCells: FadeCell[] = [];
+
+// XP gain display for gameover
+let lastXpGain = 0;
+let lastLevelUp = false;
 
 // ─── SEEDED PRNG ────────────────────────────────────────────
 function mulberry32(a: number) {
@@ -280,16 +295,17 @@ function initAudio() {
 function startDrone() {
   if (!audioCtx || !musicGain) return;
   if (droneOsc1) return;
+  const t = THEMES[save.themeIndex];
   droneOsc1 = audioCtx.createOscillator();
-  droneOsc1.type = 'sine'; droneOsc1.frequency.value = 55;
+  droneOsc1.type = 'sine'; droneOsc1.frequency.value = t.drone1;
   const lp = audioCtx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 400;
   droneOsc1.connect(lp);
   droneOsc2 = audioCtx.createOscillator();
-  droneOsc2.type = 'triangle'; droneOsc2.frequency.value = 82.5;
+  droneOsc2.type = 'triangle'; droneOsc2.frequency.value = t.drone2;
   const g2 = audioCtx.createGain(); g2.gain.value = 0.15;
   droneOsc2.connect(g2); g2.connect(lp);
   droneLfo = audioCtx.createOscillator();
-  droneLfo.type = 'sine'; droneLfo.frequency.value = 0.15;
+  droneLfo.type = 'sine'; droneLfo.frequency.value = t.droneLfo;
   const lfoG = audioCtx.createGain(); lfoG.gain.value = 0.08;
   droneLfo.connect(lfoG);
   const dg = audioCtx.createGain(); dg.gain.value = 0.12;
@@ -375,6 +391,24 @@ function renderGridCanvas() {
         ctx.fillRect(c * cellSize + 2, r * cellSize + 2, cellSize - 4, cellSize - 4);
       }
     }
+  }
+
+  // Fade-in cells (recent finds with animated alpha)
+  for (const fc of fadeCells) {
+    if (fc.alpha > 0) {
+      ctx.globalAlpha = fc.alpha;
+      ctx.fillStyle = fc.color;
+      ctx.fillRect(fc.c * cellSize + 2, fc.r * cellSize + 2, cellSize - 4, cellSize - 4);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  // Combo flash overlay
+  if (comboFlashTimer > 0) {
+    ctx.globalAlpha = Math.min(comboFlashTimer * 0.5, 0.15);
+    ctx.fillStyle = comboFlashColor;
+    ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+    ctx.globalAlpha = 1;
   }
 
   // Selection highlight (drag line) with gradient line
@@ -537,7 +571,11 @@ function checkSelection(r1: number, c1: number, r2: number, c2: number): boolean
       correctAttempts++;
       const color = FOUND_COLORS[foundColorIdx % FOUND_COLORS.length];
       foundColorIdx++;
-      for (const [cr, cc] of pCells) foundCells[cr][cc] = color;
+      for (const [cr, cc] of pCells) {
+        foundCells[cr][cc] = color;
+        // Add fade-in animation for each cell
+        fadeCells.push({ r: cr, c: cc, color: '#ffffff', alpha: 0.8, timer: 0.4 });
+      }
 
       // Combo
       const now = Date.now();
@@ -548,6 +586,14 @@ function checkSelection(r1: number, c1: number, r2: number, c2: number): boolean
       }
       lastFindTime = now;
       if (combo > bestCombo) bestCombo = combo;
+
+      // Combo flash effect on milestones
+      if (combo >= 2) {
+        comboFlashTimer = 0.4;
+        if (combo >= 5) comboFlashColor = '#ffaa00';
+        else if (combo >= 3) comboFlashColor = '#ff44ff';
+        else comboFlashColor = '#00ffff';
+      }
 
       // Score
       const baseScore = 100 * (difficulty === 'easy' ? 1 : difficulty === 'medium' ? 1.5 : 2);
@@ -666,11 +712,14 @@ function endGame(won: boolean) {
 
   // XP
   const xpGain = Math.round(score / 10 + foundCount * 5);
+  lastXpGain = xpGain;
+  lastLevelUp = false;
   save.xp += xpGain;
   const xpForLevel = (l: number) => 100 + 50 * l;
   while (save.xp >= xpForLevel(save.level) && save.level < 50) {
     save.xp -= xpForLevel(save.level);
     save.level++;
+    lastLevelUp = true;
     showToast(`Level up! Level ${save.level}`);
   }
 
@@ -746,39 +795,46 @@ function showToast(msg: string) {
 // ─── 3D SCENE SETUP ────────────────────────────────────────
 let world: World;
 let gridMesh: Mesh;
+let borderMeshRef: Mesh | null = null;
 let gridGroup: Group;
 const raycaster = new Raycaster();
 const xrRaycaster = new Raycaster();
 const mouse = new Vector2();
 let mouseDown = false;
 
+// Track holodeck scene objects for theme switching
+let holodeckObjects: any[] = [];
+
 function buildHolodeck(scene: any, t: Theme) {
+  // Clear previous holodeck objects
+  for (const obj of holodeckObjects) scene.remove(obj);
+  holodeckObjects = [];
+  const addObj = (obj: any) => { scene.add(obj); holodeckObjects.push(obj); };
+
   // Floor grid
   const floorGeo = new PlaneGeometry(20, 20);
   const floorMat = new MeshBasicMaterial({ color: new Color(t.wall), transparent: true, opacity: 0.3 });
   const floor = new Mesh(floorGeo, floorMat);
   floor.rotation.x = -Math.PI / 2;
   floor.position.y = 0;
-  scene.add(floor);
+  addObj(floor);
 
   // Grid lines on floor
   const lineColor = new Color(t.grid);
   for (let i = -10; i <= 10; i++) {
-    const mat = new LineBasicMaterial({ color: lineColor, transparent: true, opacity: 0.2 });
-    const pts = [new Vector3(i, 0.01, -10), new Vector3(i, 0.01, 10)];
     const geo = new PlaneGeometry(0.02, 20);
     const line = new Mesh(geo, new MeshBasicMaterial({ color: lineColor, transparent: true, opacity: 0.15 }));
     line.rotation.x = -Math.PI / 2; line.position.set(i, 0.01, 0);
-    scene.add(line);
+    addObj(line);
     const line2 = new Mesh(new PlaneGeometry(20, 0.02), new MeshBasicMaterial({ color: lineColor, transparent: true, opacity: 0.15 }));
     line2.rotation.x = -Math.PI / 2; line2.position.set(0, 0.01, i);
-    scene.add(line2);
+    addObj(line2);
   }
 
   // Ceiling grid
   const ceiling = new Mesh(new PlaneGeometry(20, 20), new MeshBasicMaterial({ color: new Color(t.wall), transparent: true, opacity: 0.15 }));
   ceiling.rotation.x = Math.PI / 2; ceiling.position.y = 4;
-  scene.add(ceiling);
+  addObj(ceiling);
 
   // Floating decorations
   const decoShapes = [
@@ -801,21 +857,36 @@ function buildHolodeck(scene: any, t: Theme) {
     deco.userData.rotSpeed = 0.3 + Math.random() * 0.5;
     deco.userData.bobSpeed = 0.5 + Math.random() * 0.5;
     deco.userData.bobAmp = 0.1 + Math.random() * 0.15;
-    scene.add(deco);
+    addObj(deco);
   }
 
   // Lighting
-  scene.add(new AmbientLight(new Color(t.accent), 0.3));
+  const ambLight = new AmbientLight(new Color(t.accent), 0.3); addObj(ambLight);
   const dirLight = new DirectionalLight(new Color('#ffffff'), 0.5);
   dirLight.position.set(2, 4, 3);
-  scene.add(dirLight);
+  addObj(dirLight);
   const pl1 = new PointLight(new Color(t.accent), 0.6, 10);
-  pl1.position.set(-3, 2, -3); scene.add(pl1);
+  pl1.position.set(-3, 2, -3); addObj(pl1);
   const pl2 = new PointLight(new Color('#ff44ff'), 0.3, 10);
-  pl2.position.set(3, 2, -3); scene.add(pl2);
+  pl2.position.set(3, 2, -3); addObj(pl2);
 
   // Fog
   scene.fog = new FogExp2(new Color(t.fog).getHex(), 0.06);
+}
+
+function rebuildHolodeck() {
+  if (!world) return;
+  const t = THEMES[save.themeIndex];
+  buildHolodeck(world.scene, t);
+  // Update grid border glow color
+  if (borderMeshRef) {
+    (borderMeshRef.material as MeshBasicMaterial).color.set(t.accent);
+  }
+  // Restart drone with new theme frequencies
+  stopDrone();
+  if (phase === 'playing') startDrone();
+  // Re-render grid with new theme colors
+  if (grid.length > 0) renderGridCanvas();
 }
 
 // ─── PARTICLES ──────────────────────────────────────────────
@@ -1037,6 +1108,20 @@ class GameSystem extends createSystem({}) {
     // Update particles
     updateParticles(delta);
 
+    // Update fade cells
+    for (let i = fadeCells.length - 1; i >= 0; i--) {
+      fadeCells[i].timer -= delta;
+      fadeCells[i].alpha = Math.max(0, fadeCells[i].timer / 0.4) * 0.8;
+      if (fadeCells[i].timer <= 0) fadeCells.splice(i, 1);
+    }
+    if (fadeCells.length > 0 && phase === 'playing') renderGridCanvas();
+
+    // Update combo flash
+    if (comboFlashTimer > 0) {
+      comboFlashTimer -= delta;
+      if (phase === 'playing') renderGridCanvas();
+    }
+
     // Toast timer
     if (toastTimer > 0) {
       toastTimer -= delta;
@@ -1074,6 +1159,7 @@ class GameUISystem extends createSystem({
   toast: { required: [PanelUI, PanelDocument], where: [eq(PanelUI, 'config', './ui/toast.json')] },
   countdown: { required: [PanelUI, PanelDocument], where: [eq(PanelUI, 'config', './ui/countdown.json')] },
   skins: { required: [PanelUI, PanelDocument], where: [eq(PanelUI, 'config', './ui/skins.json')] },
+  catpick: { required: [PanelUI, PanelDocument], where: [eq(PanelUI, 'config', './ui/catpick.json')] },
 }) {
   init() {
     const getDoc = (e: any) => e.getValue(PanelDocument, 'document') as UIKitDocument | undefined;
@@ -1105,8 +1191,9 @@ class GameUISystem extends createSystem({
           playClick();
           mode = m;
           if (m === 'category') {
-            // Pick random category for now
-            currentCategory = CAT_NAMES[Math.floor(Math.random() * CAT_NAMES.length)];
+            // Show category picker
+            phase = 'catpick'; showPanel('catpick');
+            return;
           }
           phase = 'difficulty'; showPanel('difficulty');
         });
@@ -1173,8 +1260,8 @@ class GameUISystem extends createSystem({
         onClick(e, `btn-${key}-down`, () => { const v = Math.max(0, (getter as any)() - 10); (setter as any)(v); setText(e, `${key}-vol`, String(v)); writeSave(); playClick(); });
         onClick(e, `btn-${key}-up`, () => { const v = Math.min(100, (getter as any)() + 10); (setter as any)(v); setText(e, `${key}-vol`, String(v)); writeSave(); playClick(); });
       }
-      onClick(e, 'btn-theme-prev', () => { save.themeIndex = (save.themeIndex - 1 + THEMES.length) % THEMES.length; updateSettings(); writeSave(); playClick(); });
-      onClick(e, 'btn-theme-next', () => { save.themeIndex = (save.themeIndex + 1) % THEMES.length; updateSettings(); writeSave(); playClick(); });
+      onClick(e, 'btn-theme-prev', () => { save.themeIndex = (save.themeIndex - 1 + THEMES.length) % THEMES.length; updateSettings(); writeSave(); rebuildHolodeck(); playClick(); });
+      onClick(e, 'btn-theme-next', () => { save.themeIndex = (save.themeIndex + 1) % THEMES.length; updateSettings(); writeSave(); rebuildHolodeck(); playClick(); });
       onClick(e, 'btn-back', () => { playClick(); phase = 'menu'; showPanel('menu'); });
     });
 
@@ -1218,6 +1305,19 @@ class GameUISystem extends createSystem({
         });
       }
       onClick(e, 'btn-back', () => { playClick(); phase = 'menu'; showPanel('menu'); });
+    });
+
+    // ─── CATEGORY PICKER ──────────────────
+    this.queries.catpick.subscribe('qualify', (e) => {
+      panelEntities.catpick = e;
+      for (const cat of CAT_NAMES) {
+        onClick(e, `btn-${cat}`, () => {
+          playClick();
+          currentCategory = cat;
+          phase = 'difficulty'; showPanel('difficulty');
+        });
+      }
+      onClick(e, 'btn-back', () => { playClick(); phase = 'modeselect'; showPanel('modeselect'); });
     });
   }
 
@@ -1276,6 +1376,8 @@ class GameUISystem extends createSystem({
       const mins = Math.floor(gameTime / 60);
       const secs = Math.floor(gameTime % 60);
       setText(panelEntities.gameover, 'stat-time', `Time: ${mins}:${secs < 10 ? '0' : ''}${secs}`);
+      const xpText = lastLevelUp ? `+${lastXpGain} XP - LEVEL UP!` : `+${lastXpGain} XP`;
+      setText(panelEntities.gameover, 'stat-xp', xpText);
       showPanel('gameover');
     }
   }
@@ -1454,6 +1556,7 @@ async function main() {
   const borderMesh = new Mesh(borderGeo, borderMat);
   borderMesh.position.set(0, 1.5, -2.51);
   world.scene.add(borderMesh);
+  borderMeshRef = borderMesh;
 
   // Create PanelUI entities
   const panelConfigs = [
@@ -1472,6 +1575,7 @@ async function main() {
     { config: './ui/toast.json', pos: [0, -0.1, -0.5], scale: 0.0012, follower: true },
     { config: './ui/countdown.json', pos: [0, 0, -0.5], scale: 0.003, follower: true },
     { config: './ui/skins.json', pos: [0, 1.5, -3], scale: 0.003 },
+    { config: './ui/catpick.json', pos: [0, 1.5, -3], scale: 0.003 },
   ];
 
   for (const pc of panelConfigs) {
