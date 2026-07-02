@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "sessionId": "0fcfe74a-be2a-43e0-88f9-4f6d07bceb50",
+  "sessionId": "784ab1ef-c0ff-489a-86a3-dff1ecb96dd3",
   "workspaceRoot": "/home/hatch/workspace/neon-words",
-  "pid": 33529,
+  "pid": 45080,
   "port": 5173,
   "localUrl": "http://localhost:5173/",
   "networkUrls": [
@@ -16,8 +16,8 @@
     "status": "connected",
     "connected": true,
     "connectedClientCount": 1,
-    "lastTransitionAt": "2026-07-02T12:05:48.046Z"
+    "lastTransitionAt": "2026-07-02T13:04:19.623Z"
   },
-  "registeredAt": "2026-07-02T12:00:24.502Z",
-  "updatedAt": "2026-07-02T12:05:48.050Z"
+  "registeredAt": "2026-07-02T13:03:25.975Z",
+  "updatedAt": "2026-07-02T13:04:19.652Z"
 }

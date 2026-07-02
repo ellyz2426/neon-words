@@ -12,7 +12,7 @@
         "properties": {
           "fontsize": "20",
           "fontweight": "bold",
-          "color": "44ff44",
+          "color": "#44ff44",
           "textalign": "center"
         },
         "dataUid": "uid-2"
@@ -29,13 +29,13 @@
             ],
             "properties": {
               "name": "btn-ANIMALS",
-              "fontsize": "13",
+              "fontsize": "12",
               "color": "#00ffff",
               "backgroundcolor": "#003344",
               "padding": "4",
               "borderradius": "4",
               "textalign": "center",
-              "width": "180"
+              "width": "115"
             },
             "dataUid": "uid-4"
           },
@@ -47,13 +47,13 @@
             ],
             "properties": {
               "name": "btn-SPACE",
-              "fontsize": "13",
+              "fontsize": "12",
               "color": "#aa44ff",
               "backgroundcolor": "#220044",
               "padding": "4",
               "borderradius": "4",
               "textalign": "center",
-              "width": "180"
+              "width": "115"
             },
             "dataUid": "uid-5"
           },
@@ -65,13 +65,13 @@
             ],
             "properties": {
               "name": "btn-FOOD",
-              "fontsize": "13",
+              "fontsize": "12",
               "color": "#ffaa00",
               "backgroundcolor": "#332200",
               "padding": "4",
               "borderradius": "4",
               "textalign": "center",
-              "width": "180"
+              "width": "115"
             },
             "dataUid": "uid-6"
           },
@@ -83,13 +83,13 @@
             ],
             "properties": {
               "name": "btn-TECH",
-              "fontsize": "13",
+              "fontsize": "12",
               "color": "#4488ff",
               "backgroundcolor": "#001133",
               "padding": "4",
               "borderradius": "4",
               "textalign": "center",
-              "width": "180"
+              "width": "115"
             },
             "dataUid": "uid-7"
           },
@@ -101,13 +101,13 @@
             ],
             "properties": {
               "name": "btn-COLORS",
-              "fontsize": "13",
+              "fontsize": "12",
               "color": "#ff44ff",
               "backgroundcolor": "#330033",
               "padding": "4",
               "borderradius": "4",
               "textalign": "center",
-              "width": "180"
+              "width": "115"
             },
             "dataUid": "uid-8"
           },
@@ -119,13 +119,13 @@
             ],
             "properties": {
               "name": "btn-SPORTS",
-              "fontsize": "13",
+              "fontsize": "12",
               "color": "#44ff44",
               "backgroundcolor": "#003300",
               "padding": "4",
               "borderradius": "4",
               "textalign": "center",
-              "width": "180"
+              "width": "115"
             },
             "dataUid": "uid-9"
           },
@@ -137,13 +137,13 @@
             ],
             "properties": {
               "name": "btn-MUSIC",
-              "fontsize": "13",
+              "fontsize": "12",
               "color": "#ff8844",
               "backgroundcolor": "#331100",
               "padding": "4",
               "borderradius": "4",
               "textalign": "center",
-              "width": "180"
+              "width": "115"
             },
             "dataUid": "uid-10"
           },
@@ -155,13 +155,13 @@
             ],
             "properties": {
               "name": "btn-NATURE",
-              "fontsize": "13",
+              "fontsize": "12",
               "color": "#88ccff",
               "backgroundcolor": "#112233",
               "padding": "4",
               "borderradius": "4",
               "textalign": "center",
-              "width": "180"
+              "width": "115"
             },
             "dataUid": "uid-11"
           },
@@ -173,13 +173,13 @@
             ],
             "properties": {
               "name": "btn-WEATHER",
-              "fontsize": "13",
+              "fontsize": "12",
               "color": "#ffff44",
               "backgroundcolor": "#333300",
               "padding": "4",
               "borderradius": "4",
               "textalign": "center",
-              "width": "180"
+              "width": "115"
             },
             "dataUid": "uid-12"
           },
@@ -191,21 +191,113 @@
             ],
             "properties": {
               "name": "btn-OCEAN",
-              "fontsize": "13",
+              "fontsize": "12",
               "color": "#00aaff",
               "backgroundcolor": "#002244",
               "padding": "4",
               "borderradius": "4",
               "textalign": "center",
-              "width": "180"
+              "width": "115"
             },
             "dataUid": "uid-13"
+          },
+          {
+            "sourceTag": "text",
+            "type": "custom",
+            "children": [
+              "TRAVEL"
+            ],
+            "properties": {
+              "name": "btn-TRAVEL",
+              "fontsize": "12",
+              "color": "#ff6688",
+              "backgroundcolor": "#331122",
+              "padding": "4",
+              "borderradius": "4",
+              "textalign": "center",
+              "width": "115"
+            },
+            "dataUid": "uid-14"
+          },
+          {
+            "sourceTag": "text",
+            "type": "custom",
+            "children": [
+              "MYTHICAL"
+            ],
+            "properties": {
+              "name": "btn-MYTHICAL",
+              "fontsize": "12",
+              "color": "#ffcc44",
+              "backgroundcolor": "#332200",
+              "padding": "4",
+              "borderradius": "4",
+              "textalign": "center",
+              "width": "115"
+            },
+            "dataUid": "uid-15"
+          },
+          {
+            "sourceTag": "text",
+            "type": "custom",
+            "children": [
+              "SCIENCE"
+            ],
+            "properties": {
+              "name": "btn-SCIENCE",
+              "fontsize": "12",
+              "color": "#66ffcc",
+              "backgroundcolor": "#003322",
+              "padding": "4",
+              "borderradius": "4",
+              "textalign": "center",
+              "width": "115"
+            },
+            "dataUid": "uid-16"
+          },
+          {
+            "sourceTag": "text",
+            "type": "custom",
+            "children": [
+              "FASHION"
+            ],
+            "properties": {
+              "name": "btn-FASHION",
+              "fontsize": "12",
+              "color": "#ff88cc",
+              "backgroundcolor": "#330022",
+              "padding": "4",
+              "borderradius": "4",
+              "textalign": "center",
+              "width": "115"
+            },
+            "dataUid": "uid-17"
+          },
+          {
+            "sourceTag": "text",
+            "type": "custom",
+            "children": [
+              "GEOGRAPHY"
+            ],
+            "properties": {
+              "name": "btn-GEOGRAPHY",
+              "fontsize": "12",
+              "color": "#aabb88",
+              "backgroundcolor": "#223311",
+              "padding": "4",
+              "borderradius": "4",
+              "textalign": "center",
+              "width": "115"
+            },
+            "dataUid": "uid-18"
           }
         ],
         "properties": {
-          "flexdirection": "column",
+          "flexdirection": "row",
           "gap": "3",
-          "alignitems": "center"
+          "justifycontent": "center",
+          "flexwrap": "wrap",
+          "width": "380"
         },
         "dataUid": "uid-3"
       },
@@ -225,14 +317,14 @@
           "textalign": "center",
           "width": "80"
         },
-        "dataUid": "uid-14"
+        "dataUid": "uid-19"
       }
     ],
     "properties": {
       "flexdirection": "column",
       "alignitems": "center",
-      "gap": "4",
-      "padding": "10"
+      "gap": "3",
+      "padding": "8"
     },
     "dataUid": "uid-1"
   },
@@ -244,7 +336,7 @@
         "column": 0
       },
       "end": {
-        "line": 15,
+        "line": 20,
         "column": 12
       }
     },
@@ -255,7 +347,7 @@
       },
       "end": {
         "line": 1,
-        "column": 94
+        "column": 95
       }
     },
     "uid-3": {
@@ -264,7 +356,7 @@
         "column": 2
       },
       "end": {
-        "line": 13,
+        "line": 18,
         "column": 14
       }
     },
@@ -370,11 +462,61 @@
     },
     "uid-14": {
       "start": {
+        "line": 13,
+        "column": 4
+      },
+      "end": {
+        "line": 13,
+        "column": 157
+      }
+    },
+    "uid-15": {
+      "start": {
         "line": 14,
-        "column": 2
+        "column": 4
       },
       "end": {
         "line": 14,
+        "column": 161
+      }
+    },
+    "uid-16": {
+      "start": {
+        "line": 15,
+        "column": 4
+      },
+      "end": {
+        "line": 15,
+        "column": 159
+      }
+    },
+    "uid-17": {
+      "start": {
+        "line": 16,
+        "column": 4
+      },
+      "end": {
+        "line": 16,
+        "column": 159
+      }
+    },
+    "uid-18": {
+      "start": {
+        "line": 17,
+        "column": 4
+      },
+      "end": {
+        "line": 17,
+        "column": 163
+      }
+    },
+    "uid-19": {
+      "start": {
+        "line": 19,
+        "column": 2
+      },
+      "end": {
+        "line": 19,
         "column": 150
       }
     }

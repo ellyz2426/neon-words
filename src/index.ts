@@ -24,6 +24,11 @@ const CATEGORIES: Record<string, string[]> = {
   NATURE: ['TREE','LAKE','HILL','SAND','RAIN','WAVE','LEAF','WIND','FIRE','SNOW','CAVE','PEAK','REEF','BLOOM','FROST','CREEK','MARSH','STONE','FERN','DUNE','BIRCH','CORAL','PETAL','GROVE','VAPOR'],
   WEATHER: ['STORM','CLOUD','HAIL','GALE','MIST','SLEET','SMOG','GUST','HEAT','CHILL','FROST','BLAZE','HUMID','CLEAR','DRIZZLE','SUNNY','WINDY','FOGGY','THAW','COLD','WARM','DAMP','BRISK','HAZE','SQUALL'],
   OCEAN: ['TIDE','SURF','KELP','SHORE','DEPTH','SHELL','WHALE','DRIFT','FOAM','CREST','CORAL','ABYSS','TRENCH','SHOAL','INLET','SWELL','PLUNGE','EDDY','BUOY','LAGOON','REEF','FJORD','CAPE','ATOLL','GULF'],
+  TRAVEL: ['HOTEL','FLIGHT','TRAIN','FERRY','TICKET','TREK','HIKE','CAMP','LODGE','ROUTE','GUIDE','VISA','TRIP','TOUR','QUEST','VILLA','BEACH','TRAIL','PASS','CRUISE','TAXI','PORT','DOCK','PIER','HAVEN'],
+  MYTHICAL: ['DRAGON','PHOENIX','TITAN','HYDRA','KRAKEN','SPHINX','PIXIE','FAIRY','DJINN','TROLL','OGRE','ELF','ORC','GNOME','SATYR','NYMPH','GOLEM','WRAITH','SHADE','MIMIC','DRAKE','WYRM','FIEND','SAGE','RUNE'],
+  SCIENCE: ['ATOM','QUARK','CELL','GENE','PRISM','ORBIT','LASER','HELIX','FLUX','IONIC','ALLOY','OPTIC','GRAFT','NERVE','TRAIT','CLONE','PHASE','WAVE','PLASMA','OXIDE','PROBE','MATRIX','LOGIC','TESLA','MESON'],
+  FASHION: ['SILK','LACE','SUEDE','TWEED','DENIM','PLAID','SATIN','LINEN','GOWN','VEST','CAPE','HOOD','STOLE','BRAID','CLASP','CHARM','BROOCH','TUXEDO','SHAWL','CUFF','PLEAT','TUNIC','FROCK','ROBE','DRAPE'],
+  GEOGRAPHY: ['CLIFF','MESA','DELTA','GORGE','RIDGE','BASIN','PLAIN','TUNDRA','STEPPE','OASIS','CANYON','BUTTE','GULLY','KNOLL','CRAG','VALE','BLUFF','RAVINE','ISTHMUS','ARCH','LEDGE','DUNE','GLEN','MARSH','MOOR'],
 };
 const CAT_NAMES = Object.keys(CATEGORIES);
 
@@ -103,6 +108,14 @@ const ACHIEVEMENTS: AchDef[] = [
   { id:'persistence', name:'Persistence', desc:'Play for 30+ minutes' },
   { id:'big_grid', name:'Big Grid', desc:'Complete a 12x12 grid' },
   { id:'legend', name:'Legend', desc:'Reach level 50' },
+  { id:'traveler', name:'Traveler', desc:'Find 20 travel words' },
+  { id:'mythologist', name:'Mythologist', desc:'Find 20 mythical words' },
+  { id:'scientist', name:'Scientist', desc:'Find 20 science words' },
+  { id:'fashionista2', name:'Trendsetter', desc:'Find 20 fashion words' },
+  { id:'geographer', name:'Geographer', desc:'Find 20 geography words' },
+  { id:'long_word', name:'Longshot', desc:'Find a 6+ letter word' },
+  { id:'five_streak', name:'Hot Streak', desc:'Find 5 words without a miss' },
+  { id:'triple_clear', name:'Triple Clear', desc:'Clear 3 grids in one session' },
 ];
 
 // ─── GAME STATE ─────────────────────────────────────────────
@@ -179,6 +192,20 @@ let comboFlashColor = '#ffffff';
 // Found word fade-in animations
 interface FadeCell { r: number; c: number; color: string; alpha: number; timer: number; }
 let fadeCells: FadeCell[] = [];
+
+// Found word strikethrough lines
+interface StrikeLine { sr: number; sc: number; er: number; ec: number; color: string; }
+let strikeLines: StrikeLine[] = [];
+
+// Grid shake effect
+let shakeOffsetX = 0;
+let shakeOffsetY = 0;
+let shakeTimer = 0;
+let shakeIntensity = 0;
+
+// Grid clear celebration
+let celebrationTimer = 0;
+let celebrationFlash = 0;
 
 // XP gain display for gameover
 let lastXpGain = 0;
@@ -475,6 +502,31 @@ function renderGridCanvas() {
   ctx.lineWidth = 3;
   ctx.strokeRect(1, 1, CANVAS_SIZE - 2, CANVAS_SIZE - 2);
 
+  // Found word strikethrough lines
+  for (const sl of strikeLines) {
+    const startX = sl.sc * cellSize + cellSize / 2;
+    const startY = sl.sr * cellSize + cellSize / 2;
+    const endX = sl.ec * cellSize + cellSize / 2;
+    const endY = sl.er * cellSize + cellSize / 2;
+    ctx.strokeStyle = sl.color;
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.globalAlpha = 0.6;
+    ctx.beginPath();
+    ctx.moveTo(startX, startY);
+    ctx.lineTo(endX, endY);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  // Grid clear celebration overlay
+  if (celebrationFlash > 0) {
+    ctx.globalAlpha = Math.min(celebrationFlash * 0.3, 0.2);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+    ctx.globalAlpha = 1;
+  }
+
   gridTexture.needsUpdate = true;
 }
 
@@ -520,6 +572,12 @@ function startGame(m: string, diff: string, cat?: string) {
   usedHints = false;
   foundColorIdx = 0;
   foundCells = Array.from({length: gridSize}, () => Array(gridSize).fill(null));
+  strikeLines = [];
+  shakeTimer = 0;
+  shakeOffsetX = 0;
+  shakeOffsetY = 0;
+  celebrationTimer = 0;
+  celebrationFlash = 0;
   selectStartR = selectStartC = selectEndR = selectEndC = -1;
   selecting = false;
   hoverR = hoverC = -1;
@@ -577,6 +635,14 @@ function checkSelection(r1: number, c1: number, r2: number, c2: number): boolean
         fadeCells.push({ r: cr, c: cc, color: '#ffffff', alpha: 0.8, timer: 0.4 });
       }
 
+      // Add strikethrough line for found word
+      const lastIdx = pCells.length - 1;
+      strikeLines.push({
+        sr: pCells[0][0], sc: pCells[0][1],
+        er: pCells[lastIdx][0], ec: pCells[lastIdx][1],
+        color,
+      });
+
       // Combo
       const now = Date.now();
       if (lastFindTime > 0 && (now - lastFindTime) < 10000) {
@@ -595,10 +661,11 @@ function checkSelection(r1: number, c1: number, r2: number, c2: number): boolean
         else comboFlashColor = '#00ffff';
       }
 
-      // Score
+      // Score: base + word length bonus + combo multiplier
       const baseScore = 100 * (difficulty === 'easy' ? 1 : difficulty === 'medium' ? 1.5 : 2);
+      const lengthBonus = Math.max(0, (p.word.length - 3)) * 25; // +25 per letter beyond 3
       const comboMult = Math.min(combo, 5);
-      const wordScore = Math.round(baseScore * comboMult);
+      const wordScore = Math.round((baseScore + lengthBonus) * comboMult);
       score += wordScore;
 
       // Track category words
@@ -642,6 +709,7 @@ function checkSelection(r1: number, c1: number, r2: number, c2: number): boolean
           foundCount = 0;
           foundColorIdx = 0;
           foundCells = Array.from({length: gridSize}, () => Array(gridSize).fill(null));
+          strikeLines = []; // Clear strikethrough lines for new grid
           renderGridCanvas();
           // Bonus score for completing a grid in marathon
           const bonus = 500 * (difficulty === 'easy' ? 1 : difficulty === 'medium' ? 2 : 3);
@@ -649,7 +717,13 @@ function checkSelection(r1: number, c1: number, r2: number, c2: number): boolean
           showToast(`Grid Clear! +${bonus} bonus`);
           emitParticles(0, 1.5, -2.5, THEMES[save.themeIndex].accent, 30);
         } else {
-          setTimeout(() => endGame(true), 500);
+          // Grid clear celebration
+          celebrationTimer = 1.5;
+          celebrationFlash = 1.0;
+          emitParticles(0, 1.5, -2.5, THEMES[save.themeIndex].accent, 40);
+          emitParticles(-0.5, 1.8, -2.5, '#ff44ff', 20);
+          emitParticles(0.5, 1.2, -2.5, '#44ff88', 20);
+          setTimeout(() => endGame(true), 1000);
         }
       }
       return true;
@@ -657,6 +731,9 @@ function checkSelection(r1: number, c1: number, r2: number, c2: number): boolean
   }
 
   playMiss();
+  // Trigger grid shake on miss
+  shakeTimer = 0.3;
+  shakeIntensity = 0.03;
   return false;
 }
 
@@ -776,6 +853,17 @@ function checkAchievements() {
   check('persistence', save.playTimeMs >= 30 * 60 * 1000);
   check('big_grid', difficulty === 'hard' && foundCount >= placements.length);
   check('legend', save.level >= 50);
+  check('traveler', (save.catWords['TRAVEL'] || 0) >= 20);
+  check('mythologist', (save.catWords['MYTHICAL'] || 0) >= 20);
+  check('scientist', (save.catWords['SCIENCE'] || 0) >= 20);
+  check('fashionista2', (save.catWords['FASHION'] || 0) >= 20);
+  check('geographer', (save.catWords['GEOGRAPHY'] || 0) >= 20);
+  // Long word: check if any found word is 6+ letters
+  for (const p of placements) { if (p.found && p.word.length >= 6) { check('long_word', true); break; } }
+  // Hot streak: 5 correct in a row
+  check('five_streak', correctAttempts >= 5 && correctAttempts === attempts);
+  // Triple clear: 3 grids in one session
+  check('triple_clear', save.gridsCleared >= 3);
 
   if (earned.length > 0) {
     playAchievement();
@@ -1108,6 +1196,29 @@ class GameSystem extends createSystem({}) {
     // Update particles
     updateParticles(delta);
 
+    // Update grid shake
+    if (shakeTimer > 0) {
+      shakeTimer -= delta;
+      const t = shakeTimer / 0.3;
+      shakeOffsetX = (Math.random() - 0.5) * 2 * shakeIntensity * t;
+      shakeOffsetY = (Math.random() - 0.5) * 2 * shakeIntensity * t;
+      if (gridMesh) {
+        gridMesh.position.x = shakeOffsetX;
+        gridMesh.position.y = 1.5 + shakeOffsetY;
+      }
+      if (shakeTimer <= 0) {
+        shakeOffsetX = 0; shakeOffsetY = 0;
+        if (gridMesh) { gridMesh.position.x = 0; gridMesh.position.y = 1.5; }
+      }
+    }
+
+    // Update celebration
+    if (celebrationTimer > 0) {
+      celebrationTimer -= delta;
+      celebrationFlash = Math.max(0, celebrationTimer / 1.5);
+      if (phase === 'playing') renderGridCanvas();
+    }
+
     // Update fade cells
     for (let i = fadeCells.length - 1; i >= 0; i--) {
       fadeCells[i].timer -= delta;
@@ -1334,7 +1445,8 @@ class GameUISystem extends createSystem({
       setText(panelEntities.hud, 'mode', mode.toUpperCase());
       if (timeLimit > 0) {
         const remaining = Math.max(0, timeLimit - gameTime);
-        setText(panelEntities.hud, 'time', `${Math.floor(remaining)}s`);
+        const warn = remaining <= 10 ? '! ' : remaining <= 30 ? '* ' : '';
+        setText(panelEntities.hud, 'time', `${warn}${Math.floor(remaining)}s`);
       } else {
         setText(panelEntities.hud, 'time', `${Math.floor(gameTime)}s`);
       }
