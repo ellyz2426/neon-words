@@ -16,6 +16,11 @@
     <text name="btn-SCIENCE" fontSize="12" color="#66ffcc" backgroundColor="#003322" padding="4" borderRadius="4" textAlign="center" width="115">SCIENCE</text>
     <text name="btn-FASHION" fontSize="12" color="#ff88cc" backgroundColor="#330022" padding="4" borderRadius="4" textAlign="center" width="115">FASHION</text>
     <text name="btn-GEOGRAPHY" fontSize="12" color="#aabb88" backgroundColor="#223311" padding="4" borderRadius="4" textAlign="center" width="115">GEOGRAPHY</text>
+    <text name="btn-HISTORY" fontSize="12" color="#ddaa44" backgroundColor="#332200" padding="4" borderRadius="4" textAlign="center" width="115">HISTORY</text>
+    <text name="btn-JOBS" fontSize="12" color="#88ff88" backgroundColor="#113311" padding="4" borderRadius="4" textAlign="center" width="115">JOBS</text>
+    <text name="btn-MAGIC" fontSize="12" color="#cc88ff" backgroundColor="#220044" padding="4" borderRadius="4" textAlign="center" width="115">MAGIC</text>
+    <text name="btn-GARDEN" fontSize="12" color="#88dd44" backgroundColor="#223300" padding="4" borderRadius="4" textAlign="center" width="115">GARDEN</text>
+    <text name="btn-TOOLS" fontSize="12" color="#aaaacc" backgroundColor="#222233" padding="4" borderRadius="4" textAlign="center" width="115">TOOLS</text>
   </container>
   <text name="btn-back" fontSize="12" color="#ff4444" backgroundColor="#330000" padding="4" borderRadius="4" textAlign="center" width="80">BACK</text>
 </container>

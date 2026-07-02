@@ -290,6 +290,96 @@
               "width": "115"
             },
             "dataUid": "uid-18"
+          },
+          {
+            "sourceTag": "text",
+            "type": "custom",
+            "children": [
+              "HISTORY"
+            ],
+            "properties": {
+              "name": "btn-HISTORY",
+              "fontsize": "12",
+              "color": "#ddaa44",
+              "backgroundcolor": "#332200",
+              "padding": "4",
+              "borderradius": "4",
+              "textalign": "center",
+              "width": "115"
+            },
+            "dataUid": "uid-19"
+          },
+          {
+            "sourceTag": "text",
+            "type": "custom",
+            "children": [
+              "JOBS"
+            ],
+            "properties": {
+              "name": "btn-JOBS",
+              "fontsize": "12",
+              "color": "#88ff88",
+              "backgroundcolor": "#113311",
+              "padding": "4",
+              "borderradius": "4",
+              "textalign": "center",
+              "width": "115"
+            },
+            "dataUid": "uid-20"
+          },
+          {
+            "sourceTag": "text",
+            "type": "custom",
+            "children": [
+              "MAGIC"
+            ],
+            "properties": {
+              "name": "btn-MAGIC",
+              "fontsize": "12",
+              "color": "#cc88ff",
+              "backgroundcolor": "#220044",
+              "padding": "4",
+              "borderradius": "4",
+              "textalign": "center",
+              "width": "115"
+            },
+            "dataUid": "uid-21"
+          },
+          {
+            "sourceTag": "text",
+            "type": "custom",
+            "children": [
+              "GARDEN"
+            ],
+            "properties": {
+              "name": "btn-GARDEN",
+              "fontsize": "12",
+              "color": "#88dd44",
+              "backgroundcolor": "#223300",
+              "padding": "4",
+              "borderradius": "4",
+              "textalign": "center",
+              "width": "115"
+            },
+            "dataUid": "uid-22"
+          },
+          {
+            "sourceTag": "text",
+            "type": "custom",
+            "children": [
+              "TOOLS"
+            ],
+            "properties": {
+              "name": "btn-TOOLS",
+              "fontsize": "12",
+              "color": "#aaaacc",
+              "backgroundcolor": "#222233",
+              "padding": "4",
+              "borderradius": "4",
+              "textalign": "center",
+              "width": "115"
+            },
+            "dataUid": "uid-23"
           }
         ],
         "properties": {
@@ -317,7 +407,7 @@
           "textalign": "center",
           "width": "80"
         },
-        "dataUid": "uid-19"
+        "dataUid": "uid-24"
       }
     ],
     "properties": {
@@ -336,7 +426,7 @@
         "column": 0
       },
       "end": {
-        "line": 20,
+        "line": 25,
         "column": 12
       }
     },
@@ -356,7 +446,7 @@
         "column": 2
       },
       "end": {
-        "line": 18,
+        "line": 23,
         "column": 14
       }
     },
@@ -512,11 +602,61 @@
     },
     "uid-19": {
       "start": {
+        "line": 18,
+        "column": 4
+      },
+      "end": {
+        "line": 18,
+        "column": 159
+      }
+    },
+    "uid-20": {
+      "start": {
         "line": 19,
-        "column": 2
+        "column": 4
       },
       "end": {
         "line": 19,
+        "column": 153
+      }
+    },
+    "uid-21": {
+      "start": {
+        "line": 20,
+        "column": 4
+      },
+      "end": {
+        "line": 20,
+        "column": 155
+      }
+    },
+    "uid-22": {
+      "start": {
+        "line": 21,
+        "column": 4
+      },
+      "end": {
+        "line": 21,
+        "column": 157
+      }
+    },
+    "uid-23": {
+      "start": {
+        "line": 22,
+        "column": 4
+      },
+      "end": {
+        "line": 22,
+        "column": 155
+      }
+    },
+    "uid-24": {
+      "start": {
+        "line": 24,
+        "column": 2
+      },
+      "end": {
+        "line": 24,
         "column": 150
       }
     }

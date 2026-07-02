@@ -29,6 +29,11 @@ const CATEGORIES: Record<string, string[]> = {
   SCIENCE: ['ATOM','QUARK','CELL','GENE','PRISM','ORBIT','LASER','HELIX','FLUX','IONIC','ALLOY','OPTIC','GRAFT','NERVE','TRAIT','CLONE','PHASE','WAVE','PLASMA','OXIDE','PROBE','MATRIX','LOGIC','TESLA','MESON'],
   FASHION: ['SILK','LACE','SUEDE','TWEED','DENIM','PLAID','SATIN','LINEN','GOWN','VEST','CAPE','HOOD','STOLE','BRAID','CLASP','CHARM','BROOCH','TUXEDO','SHAWL','CUFF','PLEAT','TUNIC','FROCK','ROBE','DRAPE'],
   GEOGRAPHY: ['CLIFF','MESA','DELTA','GORGE','RIDGE','BASIN','PLAIN','TUNDRA','STEPPE','OASIS','CANYON','BUTTE','GULLY','KNOLL','CRAG','VALE','BLUFF','RAVINE','ISTHMUS','ARCH','LEDGE','DUNE','GLEN','MARSH','MOOR'],
+  HISTORY: ['KING','QUEEN','KNIGHT','CASTLE','SWORD','SHIELD','THRONE','EMPIRE','SIEGE','BATTLE','TREATY','CROWN','DUKE','BARON','COURT','RELIC','SCROLL','EPOCH','REIGN','FORGE','RUIN','CRYPT','TOWER','MOAT','REALM'],
+  JOBS: ['CHEF','PILOT','NURSE','JUDGE','CLERK','GUARD','MASON','SMITH','MINER','BAKER','TAILOR','VALET','TUTOR','SCOUT','CADET','USHER','DIVER','MEDIC','COACH','AGENT','ELDER','RIDER','CODER','ARTIST','GUIDE'],
+  MAGIC: ['SPELL','WAND','POTION','CHARM','RUNE','CURSE','AMULET','MANA','SIGIL','ELIXIR','TOTEM','WARD','GLYPH','STAFF','WISP','RITUAL','ORACLE','ETHER','ARCANE','BANE','NEXUS','PRISM','SOUL','EMBER','AURA'],
+  GARDEN: ['BLOOM','SEED','VINE','HERB','BULB','MOSS','THORN','ROOT','STEM','PETAL','SHRUB','HEDGE','MULCH','WEED','RAKE','SOIL','SPADE','HOSE','FLORA','PRUNE','GRAFT','TURF','LAWN','BUD','ARBOR'],
+  TOOLS: ['DRILL','CLAMP','BOLT','NAIL','WRENCH','LATHE','CHISEL','VICE','RASP','AWOL','PLIER','ANVIL','RIVET','LEVER','SHEAR','WINCH','GAUGE','CALIPER','MALLET','WEDGE','HINGE','LATCH','PULLEY','BRACE','JACK'],
 };
 const CAT_NAMES = Object.keys(CATEGORIES);
 
@@ -52,6 +57,7 @@ const THEMES: Theme[] = [
   { name: 'Solar Blaze', grid: '#331100', accent: '#ff8844', bg: '#0a0400', letter: '#ffaa66', found: '#442200', hover: '#ff884422', wall: '#221100', fog: '#0a0400', drone1: 62, drone2: 93, droneLfo: 0.22 },
   { name: 'Frozen Tundra', grid: '#112233', accent: '#88ddff', bg: '#030810', letter: '#aaeeff', found: '#1a3344', hover: '#88ddff22', wall: '#0a1a2a', fog: '#030810', drone1: 42, drone2: 63, droneLfo: 0.08 },
   { name: 'Cyber Sunset', grid: '#331122', accent: '#ff6688', bg: '#0a0308', letter: '#ff88aa', found: '#441133', hover: '#ff668822', wall: '#220a1a', fog: '#0a0308', drone1: 70, drone2: 105, droneLfo: 0.25 },
+  { name: 'Digital Rain', grid: '#002200', accent: '#33ff33', bg: '#000800', letter: '#55ff55', found: '#003300', hover: '#33ff3322', wall: '#001a00', fog: '#000800', drone1: 48, drone2: 72, droneLfo: 0.1 },
 ];
 
 // ─── SKINS ──────────────────────────────────────────────────
@@ -118,6 +124,16 @@ const ACHIEVEMENTS: AchDef[] = [
   { id:'long_word', name:'Longshot', desc:'Find a 6+ letter word' },
   { id:'five_streak', name:'Hot Streak', desc:'Find 5 words without a miss' },
   { id:'triple_clear', name:'Triple Clear', desc:'Clear 3 grids in one session' },
+  { id:'historian', name:'Historian', desc:'Find 20 history words' },
+  { id:'career_day', name:'Career Day', desc:'Find 20 jobs words' },
+  { id:'sorcerer', name:'Sorcerer', desc:'Find 20 magic words' },
+  { id:'green_thumb', name:'Green Thumb', desc:'Find 20 garden words' },
+  { id:'handyman', name:'Handyman', desc:'Find 20 tools words' },
+  { id:'polyglot', name:'Polyglot', desc:'Find words in 10+ categories' },
+  { id:'completionist', name:'Completionist', desc:'Unlock 40 achievements' },
+  { id:'score_25k', name:'Score 25K', desc:'Score 25,000 in one game' },
+  { id:'marathon_10', name:'Endurance', desc:'Complete 10 marathon grids' },
+  { id:'daily_14', name:'Daily Streak 14', desc:'14 daily challenge streak' },
 ];
 
 // ─── GAME STATE ─────────────────────────────────────────────
@@ -213,9 +229,16 @@ let shakeIntensity = 0;
 let celebrationTimer = 0;
 let celebrationFlash = 0;
 
+// Pulsing grid border
+let borderPulseTime = 0;
+
 // XP gain display for gameover
 let lastXpGain = 0;
 let lastLevelUp = false;
+
+// Word reveal on game over (unfound words flash)
+let revealTimer = 0;
+let revealActive = false;
 
 // ─── SEEDED PRNG ────────────────────────────────────────────
 function mulberry32(a: number) {
@@ -386,6 +409,24 @@ function playShake() { playSfx(80, 'sawtooth', 0.15, 0.15); }
 function playCombo() { playSfx(660 + combo * 110, 'triangle', 0.1, 0.25); }
 function playHover() { playSfx(1200, 'sine', 0.03, 0.08); }
 function playSelect() { playSfx(550, 'sine', 0.08, 0.2); }
+
+// ─── XR HAPTICS ─────────────────────────────────────────────
+let xrSession: XRSession | null = null;
+function pulseHaptic(hand: 'left' | 'right', intensity: number, durationMs: number) {
+  if (!xrSession) return;
+  try {
+    const sources = xrSession.inputSources;
+    for (const src of sources) {
+      if (!src.gamepad || !src.gamepad.hapticActuators) continue;
+      if ((hand === 'right' && src.handedness === 'right') || (hand === 'left' && src.handedness === 'left')) {
+        const actuators = src.gamepad.hapticActuators;
+        if (actuators.length > 0) {
+          (actuators[0] as any).pulse?.(intensity, durationMs);
+        }
+      }
+    }
+  } catch {}
+}
 
 // ─── CANVAS GRID RENDERING ─────────────────────────────────
 let canvas: HTMLCanvasElement;
@@ -704,6 +745,7 @@ function checkSelection(r1: number, c1: number, r2: number, c2: number): boolean
       if (mode === 'zen') save.zenWords++;
 
       playFound();
+      pulseHaptic('right', 0.5, 100); // gentle haptic on word found
       if (combo >= 2) playCombo();
       showToast(`${p.word} +${wordScore}` + (combo >= 2 ? ` x${combo}` : ''));
 
@@ -759,6 +801,7 @@ function checkSelection(r1: number, c1: number, r2: number, c2: number): boolean
 
   playMiss();
   playShake();
+  pulseHaptic('right', 0.8, 200); // stronger haptic on miss
   // Trigger grid shake on miss
   shakeTimer = 0.3;
   shakeIntensity = 0.03;
@@ -788,7 +831,6 @@ function giveHint() {
 }
 
 function endGame(won: boolean) {
-  phase = 'gameover';
   const elapsed = (Date.now() - gameStartTime) / 1000;
   gameTime = elapsed;
 
@@ -837,6 +879,30 @@ function endGame(won: boolean) {
   writeSave();
   playGameOver();
   stopDrone();
+
+  // Reveal unfound words before showing gameover panel
+  const hasUnfound = placements.some(p => !p.found);
+  if (hasUnfound && gridMesh?.visible) {
+    // Highlight unfound word cells in red
+    for (const p of placements) {
+      if (!p.found) {
+        const pCells = getLineCells(p.sr, p.sc, p.sr + p.dr * (p.word.length - 1), p.sc + p.dc * (p.word.length - 1));
+        for (const [cr, cc] of pCells) {
+          if (!foundCells[cr]?.[cc]) {
+            foundCells[cr][cc] = '#ff333366';
+          }
+        }
+        // Add strikethrough for unfound in dim red
+        const lastIdx = pCells.length - 1;
+        strikeLines.push({ sr: pCells[0][0], sc: pCells[0][1], er: pCells[lastIdx][0], ec: pCells[lastIdx][1], color: '#ff333388' });
+      }
+    }
+    renderGridCanvas();
+    revealActive = true;
+    revealTimer = 2.0; // show for 2 seconds before gameover panel
+  } else {
+    phase = 'gameover';
+  }
 }
 
 function checkAchievements() {
@@ -892,9 +958,27 @@ function checkAchievements() {
   check('five_streak', correctAttempts >= 5 && correctAttempts === attempts);
   // Triple clear: 3 grids in one session
   check('triple_clear', save.gridsCleared >= 3);
+  // New category achievements
+  check('historian', (save.catWords['HISTORY'] || 0) >= 20);
+  check('career_day', (save.catWords['JOBS'] || 0) >= 20);
+  check('sorcerer', (save.catWords['MAGIC'] || 0) >= 20);
+  check('green_thumb', (save.catWords['GARDEN'] || 0) >= 20);
+  check('handyman', (save.catWords['TOOLS'] || 0) >= 20);
+  // Polyglot: words found in 10+ different categories
+  const catsWithWords = Object.keys(save.catWords).filter(k => (save.catWords[k] || 0) >= 1).length;
+  check('polyglot', catsWithWords >= 10);
+  // Completionist: 40 achievements unlocked
+  check('completionist', save.achievements.length >= 40);
+  // Score 25K
+  check('score_25k', score >= 25000);
+  // Marathon endurance
+  check('marathon_10', save.marathonGrids >= 10);
+  // Daily streak 14
+  check('daily_14', save.dailyStreak >= 14);
 
   if (earned.length > 0) {
     playAchievement();
+    emitConfetti(0, 1.8, -2.5, Math.min(earned.length * 15, 40));
     for (const id of earned) {
       const a = ACHIEVEMENTS.find(a => a.id === id);
       if (a) showToast(`Achievement: ${a.name}!`);
@@ -1036,6 +1120,28 @@ function emitParticles(x: number, y: number, z: number, color: string, count: nu
       p.vy = Math.random() * 2 + 0.5;
       p.vz = (Math.random() - 0.5) * 2;
       p.life = 0.8 + Math.random() * 0.4;
+      p.maxLife = p.life;
+      spawned++;
+    }
+  }
+}
+
+// Confetti burst — multi-colored slow-falling particles
+function emitConfetti(x: number, y: number, z: number, count: number) {
+  const confettiColors = ['#ff4444','#44ff44','#4444ff','#ffff44','#ff44ff','#44ffff','#ffaa00','#ff6688'];
+  let spawned = 0;
+  for (const p of particles) {
+    if (spawned >= count) break;
+    if (p.life <= 0) {
+      p.mesh.visible = true;
+      p.mesh.position.set(x + (Math.random()-0.5)*0.5, y, z + (Math.random()-0.5)*0.5);
+      const cc = new Color(confettiColors[spawned % confettiColors.length]);
+      (p.mesh.material as MeshBasicMaterial).color.copy(cc);
+      (p.mesh.material as MeshBasicMaterial).opacity = 1;
+      p.vx = (Math.random() - 0.5) * 3;
+      p.vy = Math.random() * 3 + 1;
+      p.vz = (Math.random() - 0.5) * 3;
+      p.life = 1.5 + Math.random() * 0.5;
       p.maxLife = p.life;
       spawned++;
     }
@@ -1280,6 +1386,15 @@ class GameSystem extends createSystem({}) {
       if (panelEntities.toast?.object3D) panelEntities.toast.object3D.visible = toastTimer > 0;
     }
 
+    // Word reveal timer (show unfound words before gameover)
+    if (revealActive && revealTimer > 0) {
+      revealTimer -= delta;
+      if (revealTimer <= 0) {
+        revealActive = false;
+        phase = 'gameover';
+      }
+    }
+
     // Animate decorations
     if (this.scene) {
       for (const obj of this.scene.children) {
@@ -1291,6 +1406,16 @@ class GameSystem extends createSystem({}) {
           obj.position.y = obj.userData.baseY + Math.sin(time * obj.userData.bobSpeed) * obj.userData.bobAmp;
         }
       }
+    }
+
+    // Pulsing grid border during gameplay
+    if (borderMeshRef && phase === 'playing') {
+      borderPulseTime += delta;
+      const baseRate = combo >= 3 ? 4 : combo >= 2 ? 3 : 2;
+      const baseOpacity = combo >= 3 ? 0.2 : combo >= 2 ? 0.15 : 0.1;
+      const amplitude = combo >= 3 ? 0.1 : combo >= 2 ? 0.08 : 0.06;
+      const pulse = baseOpacity + Math.sin(borderPulseTime * baseRate) * amplitude;
+      (borderMeshRef.material as MeshBasicMaterial).opacity = pulse;
     }
   }
 }
@@ -1540,6 +1665,13 @@ class GameUISystem extends createSystem({
       setText(panelEntities.gameover, 'stat-time', `Time: ${mins}:${secs < 10 ? '0' : ''}${secs}`);
       const xpText = lastLevelUp ? `+${lastXpGain} XP - LEVEL UP!` : `+${lastXpGain} XP`;
       setText(panelEntities.gameover, 'stat-xp', xpText);
+      // Show missed words if any
+      const missed = placements.filter(p => !p.found).map(p => p.word);
+      if (missed.length > 0) {
+        setText(panelEntities.gameover, 'missed-words', `Missed: ${missed.join(', ')}`);
+      } else {
+        setText(panelEntities.gameover, 'missed-words', 'All words found!');
+      }
       showPanel('gameover');
     }
   }
@@ -1697,6 +1829,14 @@ async function main() {
     features: {
       locomotion: true,
     },
+  });
+
+  // Capture XR session for haptic feedback
+  world.renderer.xr.addEventListener('sessionstart', () => {
+    xrSession = world.renderer.xr.getSession();
+  });
+  world.renderer.xr.addEventListener('sessionend', () => {
+    xrSession = null;
   });
 
   const t = THEMES[save.themeIndex];
