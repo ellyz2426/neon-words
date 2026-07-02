@@ -1,6 +1,6 @@
 import {
   World, createSystem, PanelUI, PanelDocument, UIKitDocument, UIKit, eq,
-  Follower, ScreenSpace,
+  Follower, ScreenSpace, InputComponent,
 } from '@iwsdk/core';
 import {
   Mesh, PlaneGeometry, BoxGeometry, SphereGeometry, TorusGeometry,
@@ -14,14 +14,14 @@ import {
 
 // ─── WORD DATABASE ──────────────────────────────────────────
 const CATEGORIES: Record<string, string[]> = {
-  ANIMALS: ['CAT','DOG','FISH','BIRD','LION','BEAR','DEER','FOX','WOLF','HORSE','EAGLE','SHARK','TIGER','SNAKE','WHALE'],
-  SPACE: ['STAR','MOON','SUN','MARS','COMET','ORBIT','NEBULA','PLANET','ROCKET','METEOR','COSMOS','VENUS','SATURN','PLUTO','SOLAR'],
-  FOOD: ['CAKE','BREAD','SOUP','RICE','PASTA','STEAK','PIZZA','TACO','SALAD','APPLE','GRAPE','LEMON','MANGO','SUSHI','CURRY'],
-  TECH: ['CODE','DATA','BYTE','CHIP','CLOUD','PIXEL','ROBOT','LASER','DEBUG','CACHE','DRONE','MODEM','VIRUS','PROXY','INPUT'],
-  COLORS: ['RED','BLUE','GREEN','GOLD','PINK','CYAN','LIME','AMBER','CORAL','IVORY','JADE','RUBY','ONYX','TEAL','PLUM'],
-  SPORTS: ['GOLF','SWIM','RACE','SURF','KICK','DUNK','GOAL','SCORE','BALL','TEAM','ARENA','COURT','MATCH','SERVE','DRAFT'],
-  MUSIC: ['DRUM','BASS','BEAT','SONG','TUNE','JAZZ','ROCK','NOTE','BAND','SOLO','TEMPO','PIANO','CHORD','SOUND','VOCAL'],
-  NATURE: ['TREE','LAKE','HILL','SAND','RAIN','WAVE','LEAF','WIND','FIRE','SNOW','CAVE','PEAK','REEF','BLOOM','FROST'],
+  ANIMALS: ['CAT','DOG','FISH','BIRD','LION','BEAR','DEER','FOX','WOLF','HORSE','EAGLE','SHARK','TIGER','SNAKE','WHALE','FROG','HAWK','CRAB','SEAL','DUCK','GOAT','MOLE','ORCA','PUMA','LYNX'],
+  SPACE: ['STAR','MOON','SUN','MARS','COMET','ORBIT','NEBULA','PLANET','ROCKET','METEOR','COSMOS','VENUS','SATURN','PLUTO','SOLAR','QUASAR','NOVA','LUNAR','PULSAR','VORTEX','ASTRAL','WARP','VOID','FLUX','TITAN'],
+  FOOD: ['CAKE','BREAD','SOUP','RICE','PASTA','STEAK','PIZZA','TACO','SALAD','APPLE','GRAPE','LEMON','MANGO','SUSHI','CURRY','TOAST','OLIVE','CREAM','BASIL','SYRUP','PEACH','PLUM','BERRY','HERB','ROAST'],
+  TECH: ['CODE','DATA','BYTE','CHIP','CLOUD','PIXEL','ROBOT','LASER','DEBUG','CACHE','DRONE','MODEM','VIRUS','PROXY','INPUT','STACK','PARSE','QUERY','LOGIC','ARRAY','PATCH','HASH','TOKEN','MACRO','BLOCK'],
+  COLORS: ['RED','BLUE','GREEN','GOLD','PINK','CYAN','LIME','AMBER','CORAL','IVORY','JADE','RUBY','ONYX','TEAL','PLUM','MAUVE','BLUSH','PEACH','SLATE','PEARL','AZURE','CREAM','EBONY','LILAC','KHAKI'],
+  SPORTS: ['GOLF','SWIM','RACE','SURF','KICK','DUNK','GOAL','SCORE','BALL','TEAM','ARENA','COURT','MATCH','SERVE','DRAFT','SPRINT','VAULT','RELAY','COACH','FIELD','TRACK','ROUND','PITCH','MEDAL','DRILL'],
+  MUSIC: ['DRUM','BASS','BEAT','SONG','TUNE','JAZZ','ROCK','NOTE','BAND','SOLO','TEMPO','PIANO','CHORD','SOUND','VOCAL','FLUTE','HARP','PULSE','LYRIC','OPERA','SLIDE','RIFF','STRUM','SCALE','MUTED'],
+  NATURE: ['TREE','LAKE','HILL','SAND','RAIN','WAVE','LEAF','WIND','FIRE','SNOW','CAVE','PEAK','REEF','BLOOM','FROST','CREEK','MARSH','STONE','FERN','DUNE','BIRCH','CORAL','PETAL','GROVE','VAPOR'],
 };
 const CAT_NAMES = Object.keys(CATEGORIES);
 
@@ -377,12 +377,39 @@ function renderGridCanvas() {
     }
   }
 
-  // Selection highlight (drag line)
+  // Selection highlight (drag line) with gradient line
   if (selecting && selectStartR >= 0 && selectEndR >= 0) {
     const cells = getLineCells(selectStartR, selectStartC, selectEndR, selectEndC);
+    // Draw selection cells
     ctx.fillStyle = t.hover;
     for (const [cr, cc] of cells) {
       ctx.fillRect(cc * cellSize + 1, cr * cellSize + 1, cellSize - 2, cellSize - 2);
+    }
+    // Draw selection line
+    if (cells.length >= 2) {
+      const startX = selectStartC * cellSize + cellSize / 2;
+      const startY = selectStartR * cellSize + cellSize / 2;
+      const endX = selectEndC * cellSize + cellSize / 2;
+      const endY = selectEndR * cellSize + cellSize / 2;
+      ctx.strokeStyle = t.accent;
+      ctx.lineWidth = 4;
+      ctx.lineCap = 'round';
+      ctx.globalAlpha = 0.6;
+      ctx.beginPath();
+      ctx.moveTo(startX, startY);
+      ctx.lineTo(endX, endY);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+      // Start/end circle markers
+      ctx.fillStyle = t.accent;
+      ctx.globalAlpha = 0.5;
+      ctx.beginPath();
+      ctx.arc(startX, startY, cellSize * 0.35, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(endX, endY, cellSize * 0.35, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
     }
   }
 
@@ -468,6 +495,9 @@ function startGame(m: string, diff: string, cat?: string) {
     timeLimit = diff === 'easy' ? 90 : diff === 'medium' ? 75 : 60;
   } else if (m === 'race') {
     timeLimit = 0; // no limit, but we track time
+  } else if (m === 'marathon') {
+    timeLimit = 300; // 5 minutes for marathon mode
+    marathonGrid = 0;
   } else {
     timeLimit = 0;
   }
@@ -538,12 +568,43 @@ function checkSelection(r1: number, c1: number, r2: number, c2: number): boolean
       if (combo >= 2) playCombo();
       showToast(`${p.word} +${wordScore}` + (combo >= 2 ? ` x${combo}` : ''));
 
+      // Emit particles at the center of the found word
+      if (pCells.length > 0) {
+        const midCell = pCells[Math.floor(pCells.length / 2)];
+        const worldGridSize = 2.2;
+        const cellWorldSize = worldGridSize / gridSize;
+        const px = -worldGridSize / 2 + (midCell[1] + 0.5) * cellWorldSize;
+        const py = 1.5 + worldGridSize / 2 - (midCell[0] + 0.5) * cellWorldSize;
+        emitParticles(px, py, -2.45, color, 8 + combo * 3);
+      }
+
       checkAchievements();
       renderGridCanvas();
 
       // Check win
       if (foundCount >= placements.length) {
-        setTimeout(() => endGame(true), 500);
+        if (mode === 'marathon') {
+          // Marathon: advance to next grid
+          marathonGrid++;
+          save.marathonGrids++;
+          showToast(`Grid ${marathonGrid + 1} -- Next!`);
+          const newWords = pickWords(getWordCount(difficulty));
+          const dirs = getDirsForDifficulty(difficulty);
+          const result = generateGrid(gridSize, newWords, dirs, Math.random);
+          grid = result.grid;
+          placements = result.placements;
+          foundCount = 0;
+          foundColorIdx = 0;
+          foundCells = Array.from({length: gridSize}, () => Array(gridSize).fill(null));
+          renderGridCanvas();
+          // Bonus score for completing a grid in marathon
+          const bonus = 500 * (difficulty === 'easy' ? 1 : difficulty === 'medium' ? 2 : 3);
+          score += bonus;
+          showToast(`Grid Clear! +${bonus} bonus`);
+          emitParticles(0, 1.5, -2.5, THEMES[save.themeIndex].accent, 30);
+        } else {
+          setTimeout(() => endGame(true), 500);
+        }
       }
       return true;
     }
@@ -554,9 +615,10 @@ function checkSelection(r1: number, c1: number, r2: number, c2: number): boolean
 }
 
 function giveHint() {
-  if (mode !== 'practice' && mode !== 'zen') return;
+  // Hints cost score: 50 points per hint
   usedHints = true;
   save.hintsUsed++;
+  if (score >= 50) score -= 50;
   for (const p of placements) {
     if (!p.found) {
       // Flash the first letter
@@ -567,7 +629,7 @@ function giveHint() {
         if (!p.found) foundCells[r][c] = null;
         renderGridCanvas();
       }, 2000);
-      showToast('Hint: look near the flash!');
+      showToast('Hint: look near the flash! (-50 pts)');
       playSfx(440, 'triangle', 0.15, 0.2);
       break;
     }
@@ -686,6 +748,7 @@ let world: World;
 let gridMesh: Mesh;
 let gridGroup: Group;
 const raycaster = new Raycaster();
+const xrRaycaster = new Raycaster();
 const mouse = new Vector2();
 let mouseDown = false;
 
@@ -810,17 +873,27 @@ function updateParticles(delta: number) {
 const panelEntities: Record<string, any> = {};
 function showPanel(name: string) {
   for (const [n, e] of Object.entries(panelEntities)) {
-    if (e && e.object3D) e.object3D.visible = (n === name || n === 'hud' || n === 'wordlist' || n === 'toast' || n === 'countdown');
+    if (e && e.object3D) {
+      if (n === 'hud' || n === 'wordlist') {
+        e.object3D.visible = (phase === 'playing' || phase === 'paused');
+      } else if (n === 'toast') {
+        e.object3D.visible = toastTimer > 0;
+      } else if (n === 'countdown') {
+        e.object3D.visible = phase === 'countdown';
+      } else {
+        e.object3D.visible = (n === name);
+      }
+    }
   }
-  // Only show HUD/wordlist/toast/countdown during gameplay
-  if (panelEntities.hud?.object3D) panelEntities.hud.object3D.visible = (phase === 'playing' || phase === 'paused');
-  if (panelEntities.wordlist?.object3D) panelEntities.wordlist.object3D.visible = (phase === 'playing' || phase === 'paused');
-  if (panelEntities.toast?.object3D) panelEntities.toast.object3D.visible = toastTimer > 0;
-  if (panelEntities.countdown?.object3D) panelEntities.countdown.object3D.visible = phase === 'countdown';
 }
 
 // ─── ECS SYSTEMS ────────────────────────────────────────────
 class GameSystem extends createSystem({}) {
+  private xrSelectStartR = -1;
+  private xrSelectStartC = -1;
+  private xrSelecting = false;
+  private prevTriggerDown = false;
+
   update(delta: number, time: number) {
     // Countdown
     if (phase === 'countdown') {
@@ -854,21 +927,78 @@ class GameSystem extends createSystem({}) {
         combo = 0;
       }
 
-      // Handle keyboard input
-      const kb = (world.input as any)?.keyboard;
-      if (kb) {
-        if (kb.getKeyPressed?.('Escape') || kb.getKeyPressed?.('KeyP')) {
-          phase = 'paused';
-          showPanel('pause');
-        }
-        if (kb.getKeyPressed?.('KeyH')) {
-          giveHint();
+      // ─── XR CONTROLLER INPUT ────────────────────
+      const rightGP = this.input.gamepads.right;
+      const leftGP = this.input.gamepads.left;
+
+      // B button (right) = pause
+      if (rightGP?.getButtonDown(InputComponent.B_Button)) {
+        phase = 'paused';
+        showPanel('pause');
+      }
+      // Y button (left B) = hint
+      if (leftGP?.getButtonDown(InputComponent.B_Button)) {
+        giveHint();
+      }
+
+      // XR controller raycasting against gridMesh for selection
+      if (gridMesh && gridMesh.visible && rightGP) {
+        const raySpace = this.player.raySpaces.right;
+        if (raySpace) {
+          const rayOrigin = new Vector3();
+          const rayDir = new Vector3(0, 0, -1);
+          raySpace.getWorldPosition(rayOrigin);
+          raySpace.getWorldDirection(rayDir);
+          rayDir.negate(); // getWorldDirection returns +Z forward, ray goes -Z
+          xrRaycaster.set(rayOrigin, rayDir);
+          const hits = xrRaycaster.intersectObject(gridMesh);
+          if (hits.length > 0 && hits[0].uv) {
+            const uv = hits[0].uv;
+            const newC = Math.floor(uv.x * gridSize);
+            const newR = Math.floor((1 - uv.y) * gridSize);
+            if (newR >= 0 && newR < gridSize && newC >= 0 && newC < gridSize) {
+              if (newR !== hoverR || newC !== hoverC) {
+                hoverR = newR; hoverC = newC;
+                if (this.xrSelecting) { selectEndR = newR; selectEndC = newC; }
+                renderGridCanvas();
+              }
+            }
+          }
+
+          // Trigger press/release for selection
+          const triggerDown = rightGP.getButtonPressed(InputComponent.Trigger);
+          if (triggerDown && !this.prevTriggerDown) {
+            // Start selection
+            if (hoverR >= 0 && hoverR < gridSize && hoverC >= 0 && hoverC < gridSize) {
+              this.xrSelectStartR = hoverR;
+              this.xrSelectStartC = hoverC;
+              selectStartR = hoverR;
+              selectStartC = hoverC;
+              selectEndR = hoverR;
+              selectEndC = hoverC;
+              this.xrSelecting = true;
+              selecting = true;
+              playSelect();
+              renderGridCanvas();
+            }
+          } else if (!triggerDown && this.prevTriggerDown && this.xrSelecting) {
+            // End selection
+            this.xrSelecting = false;
+            selecting = false;
+            if (this.xrSelectStartR >= 0 && selectEndR >= 0) {
+              checkSelection(this.xrSelectStartR, this.xrSelectStartC, selectEndR, selectEndC);
+            }
+            selectStartR = selectStartC = selectEndR = selectEndC = -1;
+            this.xrSelectStartR = this.xrSelectStartC = -1;
+            renderGridCanvas();
+          }
+          this.prevTriggerDown = !!triggerDown;
         }
       }
 
-      // Handle mouse raycasting on grid
+      // Mouse raycasting on grid (browser mode)
       if (gridMesh && gridMesh.visible) {
-        raycaster.setFromCamera(mouse, world.camera);
+        raycaster.setFromCamera(mouse, this.camera);
         const hits = raycaster.intersectObject(gridMesh);
         if (hits.length > 0 && hits[0].uv) {
           const uv = hits[0].uv;
@@ -887,6 +1017,23 @@ class GameSystem extends createSystem({}) {
       }
     }
 
+    // Paused — XR resume
+    if (phase === 'paused') {
+      const rightGP = this.input.gamepads.right;
+      if (rightGP?.getButtonDown(InputComponent.B_Button)) {
+        phase = 'playing';
+        showPanel('');
+      }
+    }
+
+    // Gameover — XR A button for rematch
+    if (phase === 'gameover') {
+      const rightGP = this.input.gamepads.right;
+      if (rightGP?.getButtonDown(InputComponent.A_Button)) {
+        startGame(mode, difficulty, currentCategory);
+      }
+    }
+
     // Update particles
     updateParticles(delta);
 
@@ -897,8 +1044,8 @@ class GameSystem extends createSystem({}) {
     }
 
     // Animate decorations
-    if (world.scene) {
-      for (const obj of world.scene.children) {
+    if (this.scene) {
+      for (const obj of this.scene.children) {
         if (obj.userData.rotSpeed) {
           obj.rotation.y += obj.userData.rotSpeed * delta;
           obj.rotation.x += obj.userData.rotSpeed * 0.3 * delta;
@@ -929,7 +1076,7 @@ class GameUISystem extends createSystem({
   skins: { required: [PanelUI, PanelDocument], where: [eq(PanelUI, 'config', './ui/skins.json')] },
 }) {
   init() {
-    const getDoc = (e: any) => (PanelDocument as any).data.document[e.index] as UIKitDocument | undefined;
+    const getDoc = (e: any) => e.getValue(PanelDocument, 'document') as UIKitDocument | undefined;
     const setText = (e: any, id: string, text: string) =>
       (getDoc(e)?.getElementById(id) as UIKit.Text | undefined)?.setProperties({ text });
     const onClick = (e: any, id: string, fn: () => void) =>
@@ -1075,7 +1222,7 @@ class GameUISystem extends createSystem({
   }
 
   update() {
-    const getDoc = (e: any) => (PanelDocument as any).data.document[e.index] as UIKitDocument | undefined;
+    const getDoc = (e: any) => e.getValue(PanelDocument, 'document') as UIKitDocument | undefined;
     const setText = (e: any, id: string, text: string) =>
       (getDoc(e)?.getElementById(id) as UIKit.Text | undefined)?.setProperties({ text });
 
@@ -1136,7 +1283,7 @@ class GameUISystem extends createSystem({
 
 function updateLeaderboard() {
   if (!panelEntities.leaderboard) return;
-  const getDoc = (e: any) => (PanelDocument as any).data.document[e.index] as UIKitDocument | undefined;
+  const getDoc = (e: any) => e.getValue(PanelDocument, 'document') as UIKitDocument | undefined;
   const setText = (e: any, id: string, text: string) =>
     (getDoc(e)?.getElementById(id) as UIKit.Text | undefined)?.setProperties({ text });
   for (let i = 0; i < 10; i++) {
@@ -1151,7 +1298,7 @@ function updateLeaderboard() {
 
 function updateAchievements() {
   if (!panelEntities.achvlist) return;
-  const getDoc = (e: any) => (PanelDocument as any).data.document[e.index] as UIKitDocument | undefined;
+  const getDoc = (e: any) => e.getValue(PanelDocument, 'document') as UIKitDocument | undefined;
   const setText = (e: any, id: string, text: string) =>
     (getDoc(e)?.getElementById(id) as UIKit.Text | undefined)?.setProperties({ text });
   const maxPage = Math.ceil(ACHIEVEMENTS.length / 15) - 1;
@@ -1170,7 +1317,7 @@ function updateAchievements() {
 
 function updateSettings() {
   if (!panelEntities.settings) return;
-  const getDoc = (e: any) => (PanelDocument as any).data.document[e.index] as UIKitDocument | undefined;
+  const getDoc = (e: any) => e.getValue(PanelDocument, 'document') as UIKitDocument | undefined;
   const setText = (e: any, id: string, text: string) =>
     (getDoc(e)?.getElementById(id) as UIKit.Text | undefined)?.setProperties({ text });
   setText(panelEntities.settings, 'master-vol', String(save.masterVol));
@@ -1181,7 +1328,7 @@ function updateSettings() {
 
 function updateStats() {
   if (!panelEntities.stats) return;
-  const getDoc = (e: any) => (PanelDocument as any).data.document[e.index] as UIKitDocument | undefined;
+  const getDoc = (e: any) => e.getValue(PanelDocument, 'document') as UIKitDocument | undefined;
   const setText = (e: any, id: string, text: string) =>
     (getDoc(e)?.getElementById(id) as UIKit.Text | undefined)?.setProperties({ text });
   const acc = save.totalAttempts > 0 ? Math.round((save.totalCorrect / save.totalAttempts) * 100) : 0;
@@ -1213,7 +1360,7 @@ function isSkinUnlocked(idx: number): boolean {
 
 function updateSkins() {
   if (!panelEntities.skins) return;
-  const getDoc = (e: any) => (PanelDocument as any).data.document[e.index] as UIKitDocument | undefined;
+  const getDoc = (e: any) => e.getValue(PanelDocument, 'document') as UIKitDocument | undefined;
   const setText = (e: any, id: string, text: string) =>
     (getDoc(e)?.getElementById(id) as UIKit.Text | undefined)?.setProperties({ text });
   for (let i = 0; i < 8; i++) {
@@ -1282,9 +1429,11 @@ async function main() {
   if (!container) return;
 
   world = await World.create(container, {
-    xr: { offer: 'once' as const },
-    browserControls: true,
-  } as any);
+    xr: { offer: 'once' },
+    features: {
+      locomotion: true,
+    },
+  });
 
   const t = THEMES[save.themeIndex];
   buildHolodeck(world.scene, t);
@@ -1326,12 +1475,12 @@ async function main() {
   ];
 
   for (const pc of panelConfigs) {
-    const entity = (world as any).ecs.createEntity();
+    const entity = world.createTransformEntity();
     entity.addComponent(PanelUI, { config: pc.config });
-    if (entity.object3D) {
-      entity.object3D.position.set(pc.pos[0], pc.pos[1], pc.pos[2]);
-      entity.object3D.scale.setScalar(pc.scale);
-    }
+    entity.object3D!.position.set(pc.pos[0], pc.pos[1], pc.pos[2]);
+    entity.object3D!.scale.setScalar(pc.scale);
+    // Start all panels hidden — qualify handlers will show the menu
+    entity.object3D!.visible = false;
     if (pc.follower) {
       entity.addComponent(Follower);
       const fv = entity.getVectorView(Follower, 'offsetPosition');
