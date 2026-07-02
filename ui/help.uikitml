@@ -1,21 +1,26 @@
-<container flexDirection="column" alignItems="center" gap="4" padding="8">
+<container flexDirection="column" alignItems="center" gap="3" padding="8">
   <text fontSize="18" fontWeight="bold" color="#aaaaaa" textAlign="center">HOW TO PLAY</text>
   <text fontSize="11" color="#cccccc" textAlign="center">Find hidden words in the letter grid!</text>
+  <text fontSize="11" color="#cccccc" textAlign="center">Words can go horizontal, vertical, or diagonal.</text>
   <text fontSize="12" fontWeight="bold" color="#00ffff">BROWSER CONTROLS</text>
-  <text fontSize="10" color="#aaaaaa">Click start letter, drag to end</text>
-  <text fontSize="10" color="#aaaaaa">ESC / P = Pause | H = Hint</text>
-  <text fontSize="10" color="#aaaaaa">R = Rematch</text>
+  <text fontSize="10" color="#aaaaaa">Click and drag from start to end letter</text>
+  <text fontSize="10" color="#aaaaaa">ESC / P = Pause | H = Hint | R = Rematch</text>
   <text fontSize="12" fontWeight="bold" color="#00ffff">VR CONTROLS</text>
-  <text fontSize="10" color="#aaaaaa">Trigger = Select | B = Pause</text>
-  <text fontSize="10" color="#aaaaaa">Point at letters with laser</text>
-  <text fontSize="12" fontWeight="bold" color="#ffaa00">MODES</text>
+  <text fontSize="10" color="#aaaaaa">Point laser at grid, trigger to select</text>
+  <text fontSize="10" color="#aaaaaa">B = Pause | Y = Hint | A = Rematch</text>
+  <text fontSize="12" fontWeight="bold" color="#ffaa00">SCORING</text>
+  <text fontSize="10" color="#aaaaaa">Base: 100 pts (150 med, 200 hard)</text>
+  <text fontSize="10" color="#aaaaaa">Length bonus: +25 per letter over 3</text>
+  <text fontSize="10" color="#aaaaaa">Combo: find words within 10s for x2-x5</text>
+  <text fontSize="12" fontWeight="bold" color="#44ff44">MODES</text>
   <text fontSize="9" color="#aaaaaa">Classic: Find all words for score</text>
-  <text fontSize="9" color="#aaaaaa">Timed: Find words before time runs out</text>
-  <text fontSize="9" color="#aaaaaa">Race: Find all words as fast as you can</text>
-  <text fontSize="9" color="#aaaaaa">Category: All words from one topic</text>
-  <text fontSize="9" color="#aaaaaa">Daily: Same puzzle for everyone today</text>
-  <text fontSize="9" color="#aaaaaa">Zen: No pressure, just enjoy</text>
-  <text fontSize="9" color="#aaaaaa">Marathon: Multiple grids back to back</text>
-  <text fontSize="9" color="#aaaaaa">Practice: Hints available, learn</text>
+  <text fontSize="9" color="#aaaaaa">Timed: Beat the clock | Race: Speed run</text>
+  <text fontSize="9" color="#aaaaaa">Category: One topic | Daily: Shared puzzle</text>
+  <text fontSize="9" color="#aaaaaa">Zen: No pressure | Marathon: Multi-grid</text>
+  <text fontSize="9" color="#aaaaaa">Practice: Word preview before start</text>
+  <text fontSize="12" fontWeight="bold" color="#ff44ff">TIPS</text>
+  <text fontSize="9" color="#aaaaaa">Easy = 8x8 grid, 4 directions</text>
+  <text fontSize="9" color="#aaaaaa">Medium = 10x10, 6 directions</text>
+  <text fontSize="9" color="#aaaaaa">Hard = 12x12, all 8 directions</text>
   <text name="btn-back" fontSize="12" color="#ff4444" backgroundColor="#330000" padding="4" borderRadius="4" textAlign="center" width="80">BACK</text>
 </container>

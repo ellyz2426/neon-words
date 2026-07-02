@@ -50,6 +50,8 @@ const THEMES: Theme[] = [
   { name: 'Toxic Neon', grid: '#003300', accent: '#44ff44', bg: '#000a00', letter: '#44ff44', found: '#004400', hover: '#44ff4422', wall: '#002200', fog: '#000a00', drone1: 49, drone2: 73.5, droneLfo: 0.12 },
   { name: 'Ultra Violet', grid: '#220044', accent: '#aa44ff', bg: '#08001a', letter: '#bb66ff', found: '#330055', hover: '#aa44ff22', wall: '#1a0033', fog: '#08001a', drone1: 58, drone2: 87, droneLfo: 0.18 },
   { name: 'Solar Blaze', grid: '#331100', accent: '#ff8844', bg: '#0a0400', letter: '#ffaa66', found: '#442200', hover: '#ff884422', wall: '#221100', fog: '#0a0400', drone1: 62, drone2: 93, droneLfo: 0.22 },
+  { name: 'Frozen Tundra', grid: '#112233', accent: '#88ddff', bg: '#030810', letter: '#aaeeff', found: '#1a3344', hover: '#88ddff22', wall: '#0a1a2a', fog: '#030810', drone1: 42, drone2: 63, droneLfo: 0.08 },
+  { name: 'Cyber Sunset', grid: '#331122', accent: '#ff6688', bg: '#0a0308', letter: '#ff88aa', found: '#441133', hover: '#ff668822', wall: '#220a1a', fog: '#0a0308', drone1: 70, drone2: 105, droneLfo: 0.25 },
 ];
 
 // ─── SKINS ──────────────────────────────────────────────────
@@ -131,7 +133,7 @@ interface SaveData {
   achievements: string[]; modesPlayed: string[]; themesUsed: number[];
   leaderboard: { score: number; mode: string; date: string; words: number; }[];
   catWords: Record<string, number>; zenWords: number; marathonGrids: number;
-  dailyDone: number; hintsUsed: number;
+  dailyDone: number; hintsUsed: number; tutorialSeen: boolean;
 }
 
 const defaultSave = (): SaveData => ({
@@ -140,7 +142,7 @@ const defaultSave = (): SaveData => ({
   dailyStreak: 0, lastDaily: '', level: 1, xp: 0, skinIndex: 0, themeIndex: 0,
   masterVol: 80, sfxVol: 80, musicVol: 80, achievements: [], modesPlayed: [],
   themesUsed: [], leaderboard: [], catWords: {}, zenWords: 0, marathonGrids: 0,
-  dailyDone: 0, hintsUsed: 0,
+  dailyDone: 0, hintsUsed: 0, tutorialSeen: false,
 });
 
 let save: SaveData;
@@ -179,6 +181,10 @@ let achPage = 0;
 let usedHints = false;
 let sessionStartMs = 0;
 let currentCategory = '';
+
+// Practice mode word preview
+let practicePreview = false;
+let practicePreviewTimer = 0;
 
 // Found cells: color per cell for rendering
 let foundCells: (string | null)[][] = [];
@@ -373,6 +379,10 @@ function playAchievement() {
 function playGameOver() {
   [880,660,440,330].forEach((f,i) => setTimeout(() => playSfx(f, 'triangle', 0.2, 0.2), i * 120));
 }
+function playCelebrate() {
+  [440,554,659,880,1100,1320].forEach((f,i) => setTimeout(() => playSfx(f, 'sine', 0.15, 0.25), i * 80));
+}
+function playShake() { playSfx(80, 'sawtooth', 0.15, 0.15); }
 function playCombo() { playSfx(660 + combo * 110, 'triangle', 0.1, 0.25); }
 function playHover() { playSfx(1200, 'sine', 0.03, 0.08); }
 function playSelect() { playSfx(550, 'sine', 0.08, 0.2); }
@@ -601,6 +611,22 @@ function startGame(m: string, diff: string, cat?: string) {
   if (!save.themesUsed.includes(save.themeIndex)) save.themesUsed.push(save.themeIndex);
   writeSave();
 
+  // Practice mode: show word positions briefly before countdown
+  if (mode === 'practice') {
+    practicePreview = true;
+    practicePreviewTimer = 3.0; // show for 3 seconds
+    // Highlight all word cells temporarily
+    for (const p of placements) {
+      const pCells = getLineCells(p.sr, p.sc, p.sr + p.dr * (p.word.length - 1), p.sc + p.dc * (p.word.length - 1));
+      for (const [cr, cc] of pCells) {
+        foundCells[cr][cc] = '#ffffff18';
+      }
+    }
+  } else {
+    practicePreview = false;
+    practicePreviewTimer = 0;
+  }
+
   // Start countdown
   countdownVal = 3;
   countdownTimer = 0;
@@ -720,6 +746,7 @@ function checkSelection(r1: number, c1: number, r2: number, c2: number): boolean
           // Grid clear celebration
           celebrationTimer = 1.5;
           celebrationFlash = 1.0;
+          playCelebrate();
           emitParticles(0, 1.5, -2.5, THEMES[save.themeIndex].accent, 40);
           emitParticles(-0.5, 1.8, -2.5, '#ff44ff', 20);
           emitParticles(0.5, 1.2, -2.5, '#44ff88', 20);
@@ -731,6 +758,7 @@ function checkSelection(r1: number, c1: number, r2: number, c2: number): boolean
   }
 
   playMiss();
+  playShake();
   // Trigger grid shake on miss
   shakeTimer = 0.3;
   shakeIntensity = 0.03;
@@ -1056,6 +1084,19 @@ class GameSystem extends createSystem({}) {
   update(delta: number, time: number) {
     // Countdown
     if (phase === 'countdown') {
+      // Practice mode preview: show words briefly before countdown starts
+      if (practicePreview && practicePreviewTimer > 0) {
+        practicePreviewTimer -= delta;
+        if (gridMesh) gridMesh.visible = true;
+        if (practicePreviewTimer <= 0) {
+          practicePreview = false;
+          // Clear preview highlights
+          foundCells = Array.from({length: gridSize}, () => Array(gridSize).fill(null));
+          renderGridCanvas();
+        }
+        return;
+      }
+
       countdownTimer += delta;
       if (countdownTimer >= 1) {
         countdownTimer -= 1;
@@ -1283,6 +1324,7 @@ class GameUISystem extends createSystem({
     this.queries.menu.subscribe('qualify', (e) => {
       panelEntities.menu = e;
       setText(e, 'level-display', `Level ${save.level} - ${save.xp} XP`);
+      setText(e, 'daily-info', save.dailyStreak > 0 ? `Daily Streak: ${save.dailyStreak}` : 'Try the Daily Challenge!');
       onClick(e, 'btn-play', () => { playClick(); phase = 'modeselect'; showPanel('modeselect'); });
       onClick(e, 'btn-scores', () => { playClick(); phase = 'leaderboard'; updateLeaderboard(); showPanel('leaderboard'); });
       onClick(e, 'btn-achievements', () => { playClick(); phase = 'achievements'; achPage = 0; updateAchievements(); showPanel('achvlist'); });
@@ -1290,7 +1332,15 @@ class GameUISystem extends createSystem({
       onClick(e, 'btn-skins', () => { playClick(); phase = 'skins'; updateSkins(); showPanel('skins'); });
       onClick(e, 'btn-settings', () => { playClick(); phase = 'settings'; updateSettings(); showPanel('settings'); });
       onClick(e, 'btn-help', () => { playClick(); phase = 'help'; showPanel('help'); });
-      showPanel('menu');
+      // First-time tutorial: show help on first launch
+      if (!save.tutorialSeen) {
+        save.tutorialSeen = true;
+        writeSave();
+        phase = 'help';
+        showPanel('help');
+      } else {
+        showPanel('menu');
+      }
     });
 
     // ─── MODE SELECT ──────────────────────
